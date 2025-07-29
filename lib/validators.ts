@@ -21,5 +21,5 @@ export const createEmployeeSchema = z.object({
   administration: z.string().min(1, 'الإدارة مطلوبة'),
   actualWork: z.string().min(1, 'العمل الفعلي مطلوب'),
   phoneNumber: z.string().min(1, 'رقم الهاتف مطلوب'),
-  // notes: z.string().optional(),
+  notes: z.string().optional(),
 });
