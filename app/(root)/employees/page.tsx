@@ -13,56 +13,44 @@ import { useState } from "react"
 // import { useUsers } from "./user-context"
 import type { User, FamilyMember, Sibling } from "@/types"
 
-interface PersonalInfoFormProps {
-  editingUser?: User | null
-  onBack?: () => void
-  onSave?: () => void
-}
-
-export default function PersonalInfoForm({ editingUser, onBack, onSave }: PersonalInfoFormProps) {
+export default function EmployeesPage() {
   // const { addUser, updateUser } = useUsers()
 
   // Add form state for all fields
   const [formData, setFormData] = useState({
-    fullName: editingUser?.fullName || "",
-    monthName: editingUser?.monthName || "",
-    birthDate: editingUser?.birthDate || "",
-    workAddress: editingUser?.workAddress || "",
-    appointmentDate: editingUser?.appointmentDate || "",
-    currentWork: editingUser?.currentWork || "",
-    email: editingUser?.email || "",
-    mobile: editingUser?.mobile || "",
-    fatherName: editingUser?.fatherName || "",
-    fatherIdNumber: editingUser?.fatherIdNumber || "",
-    fatherBirthInfo: editingUser?.fatherBirthInfo || "",
-    fatherProfession: editingUser?.fatherProfession || "",
-    fatherResidence: editingUser?.fatherResidence || "",
-    motherName: editingUser?.motherName || "",
-    motherIdNumber: editingUser?.motherIdNumber || "",
-    motherBirthInfo: editingUser?.motherBirthInfo || "",
-    motherProfession: editingUser?.motherProfession || "",
-    motherResidence: editingUser?.motherResidence || "",
-    signature: editingUser?.signature || "",
-    declarationDate: editingUser?.declarationDate || "",
+    fullName: "",
+    monthName: "",
+    birthDate: "",
+    workAddress: "",
+    appointmentDate: "",
+    currentWork: "",
+    email: "",
+    mobile: "",
+    fatherName: "",
+    fatherIdNumber: "",
+    fatherBirthInfo: "",
+    fatherProfession: "",
+    fatherResidence: "",
+    motherName: "",
+    motherIdNumber: "",
+    motherBirthInfo: "",
+    motherProfession: "",
+    motherResidence: "",
+    signature: "",
+    declarationDate: "",
   })
 
-  const [spouseInfo, setSpouseInfo] = useState<FamilyMember[]>(
-    editingUser?.spouseInfo?.length
-      ? editingUser.spouseInfo
-      : [{ id: "1", name: "", profession: "", birthDate: "", birthPlace: "", idNumber: "", notes: "" }],
-  )
+  const [spouseInfo, setSpouseInfo] = useState<FamilyMember[]>([
+    { id: "1", name: "", profession: "", birthDate: "", birthPlace: "", idNumber: "", notes: "" },
+  ])
 
-  const [children, setChildren] = useState<FamilyMember[]>(
-    editingUser?.children?.length
-      ? editingUser.children
-      : [{ id: "1", name: "", profession: "", birthDate: "", birthPlace: "", idNumber: "", notes: "" }],
-  )
+  const [children, setChildren] = useState<FamilyMember[]>([
+    { id: "1", name: "", profession: "", birthDate: "", birthPlace: "", idNumber: "", notes: "" },
+  ])
 
-  const [siblings, setSiblings] = useState<Sibling[]>(
-    editingUser?.siblings?.length
-      ? editingUser.siblings
-      : [{ id: "1", name: "", profession: "", birthDate: "", residence: "" }],
-  )
+  const [siblings, setSiblings] = useState<Sibling[]>([
+    { id: "1", name: "", profession: "", birthDate: "", residence: "" },
+  ])
 
   const addSpouse = () => {
     const newId = (spouseInfo.length + 1).toString()
@@ -113,24 +101,19 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
     e.preventDefault()
 
     const userData: User = {
-      id: editingUser?.id || Date.now().toString(),
+      id: Date.now().toString(),
       ...formData,
       spouseInfo,
       children,
       siblings,
-      createdAt: editingUser?.createdAt || new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     console.log(userData);
 
-    if (editingUser) {
-      // updateUser(editingUser.id, userData)
-    } else {
-      // addUser(userData)
-    }
-
-    onSave?.()
+    // Here you would save the user data
+    // For now, just logging to console
   }
 
   return (
@@ -138,22 +121,13 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            {editingUser ? "Edit User - تعديل المستخدم" : "وثيقة تعارف - Personal Information Form"}
+            وثيقة تعارف - Personal Information Form
           </CardTitle>
           <CardDescription className="text-center">
             Ministry of Housing and Urban Communities - وزارة الإسكان والمجتمعات العمرانية
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          {onBack && (
-            <div className="mb-6">
-              <Button variant="ghost" onClick={onBack} className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Users
-              </Button>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Personal Information Section */}
             <div className="space-y-4">
@@ -575,7 +549,7 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
             {/* Submit Button */}
             <div className="flex justify-center pt-6">
               <Button type="submit" size="lg" className="px-8">
-                {editingUser ? "Update User - تحديث المستخدم" : "Submit Form - إرسال النموذج"}
+                Submit Form - إرسال النموذج
               </Button>
             </div>
           </form>
