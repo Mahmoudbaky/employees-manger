@@ -388,9 +388,9 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
                   <h4 className="font-medium mb-4">Father Information - بيانات الوالد</h4>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Father's Name - اسم الوالد رباعي</Label>
+                      <Label>Father&apos;s Name - اسم الوالد رباعي</Label>
                       <Input
-                        placeholder="Enter father's name"
+                        placeholder="Enter father&apos;s name"
                         value={formData.fatherName}
                         onChange={(e) => setFormData((prev) => ({ ...prev, fatherName: e.target.value }))}
                       />
@@ -435,9 +435,9 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
                   <h4 className="font-medium mb-4">Mother Information - بيانات الوالدة</h4>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Mother's Name - اسم الوالدة رباعي</Label>
+                      <Label>Mother&apos;s Name - اسم الوالدة رباعي</Label>
                       <Input
-                        placeholder="Enter mother's name"
+                        placeholder="Enter mother&apos;s name"
                         value={formData.motherName}
                         onChange={(e) => setFormData((prev) => ({ ...prev, motherName: e.target.value }))}
                       />
