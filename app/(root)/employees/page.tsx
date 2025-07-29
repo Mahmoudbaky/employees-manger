@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Plus, Trash2, ArrowLeft } from "lucide-react"
 import { useState } from "react"
 // import { useUsers } from "./user-context"
-import type { User, FamilyMember, Sibling } from "./types"
+import type { User, FamilyMember, Sibling } from "@/types"
 
 interface PersonalInfoFormProps {
   editingUser?: User | null
@@ -125,9 +125,9 @@ export default function PersonalInfoForm({ editingUser, onBack, onSave }: Person
     console.log(userData);
 
     if (editingUser) {
-      updateUser(editingUser.id, userData)
+      // updateUser(editingUser.id, userData)
     } else {
-      addUser(userData)
+      // addUser(userData)
     }
 
     onSave?.()
