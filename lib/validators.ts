@@ -6,20 +6,126 @@ export const signInSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
+// export const createRelationshipSchema = z.object({
+//   relationshipType: z.string().min(1, 'نوع العلاقة مطلوب'),
+//   name: z.string().min(1, 'الاسم مطلوب'),
+//   nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+//   birthDate: z.string().transform((str) => new Date(str)),
+//   birthPlace: z.string().optional(),
+//   profession: z.string().optional(),
+//   spouseName: z.string().optional(),
+//   residenceLocation: z.string().min(1, 'محل الاقامة مطلوب'),
+//   notes: z.string().optional(),
+// });
 
-export const createEmployeeSchema = z.object({
-  arabicName: z.string().min(1, 'الاسم مطلوب'),
+// Form schema for React Hook Form (before transformation)
+export const createEmployeeFormSchema = z.object({
+  name: z.string().min(2, 'الاسم مطلوب'),
   nickName: z.string().min(1, 'اسم الشهرة مطلوب'),
   profession: z.string().min(1, 'المهنة مطلوبة'),
-  birthDate: z.string().transform((str) => new Date(str)),
+  birthDate: z.coerce.string().min(1, 'تاريخ الميلاد مطلوب'),
   nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
-  maritalStatus: z.enum(['متزوج', 'أعزب', 'مطلق', 'أرمل']),
+  maritalStatus: z.string().min(1, 'الحالة الاجتماعية مطلوبة'),
   residenceLocation: z.string().min(1, 'العنوان التفصيلي مطلوب'),  
-  hiringDate: z.string().transform((str) => new Date(str)),
-  hiringType: z.enum(['دوام كامل', 'دوام جزئي', 'عقد']),
+  hiringDate: z.coerce.string().min(1, 'تاريخ التعيين مطلوب'),
+  hiringType: z.string().min(1, 'نوع التوظيف مطلوب'),
   email: z.string().email('البريد الإلكتروني غير صحيح').optional().or(z.literal('')),
   administration: z.string().min(1, 'الإدارة مطلوبة'),
   actualWork: z.string().min(1, 'العمل الفعلي مطلوب'),
   phoneNumber: z.string().min(1, 'رقم الهاتف مطلوب'),
   notes: z.string().optional(),
+  relationships: z.array(z.object({
+    employeeId : z.string().optional(),
+    relationshipType: z.string().min(1, 'نوع العلاقة مطلوب'),
+    name: z.string().min(1, 'الاسم مطلوب'),
+    nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+    birthDate: z.string().min(1, 'تاريخ الميلاد مطلوب'),
+    birthPlace: z.string().optional(),
+    profession: z.string().optional(),
+    spouseName: z.string().optional(),
+    residenceLocation: z.string().min(1, 'محل الاقامة مطلوب'),
+    notes: z.string().optional(),
+  }))
 });
+
+
+// Form schema (for form input only, no date transformations)
+export const formSchema = z.object({
+  name: z.string().min(2, 'الاسم مطلوب'),
+  nickName: z.string().min(1, 'اسم الشهرة مطلوب'),
+  profession: z.string().min(1, 'المهنة مطلوبة'),
+  birthDate: z.string().min(1, 'تاريخ الميلاد مطلوب'),
+  nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+  maritalStatus: z.enum(['single', 'married', 'divorced', 'widowed']),
+  residenceLocation: z.string().min(1, 'العنوان التفصيلي مطلوب'),  
+  hiringDate: z.string().min(1, 'تاريخ التعيين مطلوب'),
+  hiringType: z.enum(['full-time', 'part-time', 'contract', 'temporary']),
+  email: z.string().email('البريد الإلكتروني غير صحيح').optional().or(z.literal('')),
+  administration: z.string().min(1, 'الإدارة مطلوبة'),
+  actualWork: z.string().min(1, 'العمل الفعلي مطلوب'),
+  phoneNumber: z.string().min(1, 'رقم الهاتف مطلوب'),
+  notes: z.string().optional(),
+  relationships: z.array(z.object({
+    relationshipType: z.string().min(1, 'نوع العلاقة مطلوب'),
+    name: z.string().min(1, 'الاسم مطلوب'),
+    nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+    birthDate: z.string().min(1, 'تاريخ الميلاد مطلوب'),
+    birthPlace: z.string().optional(),
+    profession: z.string().optional(),
+    spouseName: z.string().optional(),
+    residenceLocation: z.string().min(1, 'محل الاقامة مطلوب'),
+    notes: z.string().optional(),
+  }))
+});
+
+// export const createEmployeeSchema = z.object({
+//   name: z.string().min(2, 'الاسم مطلوب'),
+//   nickName: z.string().min(1, 'اسم الشهرة مطلوب'),
+//   profession: z.string().min(1, 'المهنة مطلوبة'),
+//   birthDate: z.string().transform((str) => new Date(str)),
+//   nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+//   maritalStatus: z.enum(['متزوج', 'أعزب', 'مطلق', 'أرمل']),
+//   residenceLocation: z.string().min(1, 'العنوان التفصيلي مطلوب'),  
+//   hiringDate: z.string().transform((str) => new Date(str)),
+//   hiringType: z.enum(['دوام كامل', 'دوام جزئي', 'عقد']),
+//   email: z.string().email('البريد الإلكتروني غير صحيح').optional().or(z.literal('')),
+//   administration: z.string().min(1, 'الإدارة مطلوبة'),
+//   actualWork: z.string().min(1, 'العمل الفعلي مطلوب'),
+//   phoneNumber: z.string().min(1, 'رقم الهاتف مطلوب'),
+//   notes: z.string().optional(),
+//   relationships: z.array(createRelationshipSchema).optional().default([])
+// });
+
+
+// export const updateEmployeeSchema = createEmployeeSchema.partial().extend({
+//   id: z.string().uuid('معرف الموظف غير صحيح'),
+// });
+
+
+
+
+// name: z.string().min(2, 'الاسم مطلوب'),
+//   nickName: z.string().min(1, 'اسم الشهرة مطلوب'),
+//   profession: z.string().min(1, 'المهنة مطلوبة'),
+//   birthDate: z.string().min(1, 'تاريخ الميلاد مطلوب'),
+//   nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+//   maritalStatus: z.string().min(1, 'الحالة الاجتماعية مطلوبة'),
+//   residenceLocation: z.string().min(1, 'العنوان التفصيلي مطلوب'),  
+//   hiringDate: z.string().min(1, 'تاريخ التعيين مطلوب'),
+//   hiringType: z.string().min(1, 'نوع التوظيف مطلوب'),
+//   email: z.string().email('البريد الإلكتروني غير صحيح').optional().or(z.literal('')),
+//   administration: z.string().min(1, 'الإدارة مطلوبة'),
+//   actualWork: z.string().min(1, 'العمل الفعلي مطلوب'),
+//   phoneNumber: z.string().min(1, 'رقم الهاتف مطلوب'),
+//   notes: z.string().optional(),
+//   relationships: z.array(z.object({
+//     relationshipType: z.string().min(1, 'نوع العلاقة مطلوب'),
+//     name: z.string().min(1, 'الاسم مطلوب'),
+//     nationalId: z.string().min(1, 'رقم الهوية الوطنية مطلوب'),
+//     birthDate: z.date().min(1, 'تاريخ الميلاد مطلوب'),
+//     birthPlace: z.string().optional(),
+//     profession: z.string().optional(),
+//     spouseName: z.string().optional(),
+//     residenceLocation: z.string().min(1, 'محل الاقامة مطلوب'),
+//     notes: z.string().optional(),
+//   })).optional().default([])

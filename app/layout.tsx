@@ -1,13 +1,19 @@
 
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Rubik } from 'next/font/google'
 import NextAuthProvider from '@/components/providers/session-provider'
+import { APP_NAME ,APP_DESCRIPTION, SERVER_URL  } from '@/lib/constants'
+import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'] })
+const rubik = Rubik({ subsets: ['arabic'] })
 
 export const metadata = {
-  title: 'NextAuth App',
-  description: 'NextAuth with username/password authentication',
+   title: {
+    template: `%s | ${APP_NAME}`,
+    default: APP_NAME,
+  },
+   description: APP_DESCRIPTION,
+  metadataBase: new URL(SERVER_URL),
 }
 
 export default function RootLayout({
@@ -16,10 +22,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${rubik.className} antialiased`}>
         <NextAuthProvider>
           {children}
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            toastOptions={{
+              className: 'bg-white text-gray-900 shadow-lg',
+              style: {
+                fontSize: '16px',
+                padding: '12px 16px',
+              },
+            }}
+          />
         </NextAuthProvider>
       </body>
     </html>

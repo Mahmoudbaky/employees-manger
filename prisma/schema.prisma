@@ -14,8 +14,8 @@ datasource db {
 }
 
 model Account {
-  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String      @db.Uuid
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -33,7 +33,7 @@ model Account {
 }
 
 model Session {
-  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   sessionToken String   @unique
   userId       String   @db.Uuid
   expires      DateTime
@@ -41,7 +41,7 @@ model Session {
 }
 
 model User {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String?
   email         String?   @unique
   username      String    @unique
@@ -62,134 +62,50 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-
 model Employee {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
   // Basic Information (وثيقة تعارف)
-  arabicName        String   // الاسم (رباعي)
-  nickName          String   // اسم الشهرة
-  profession        String   // المهنة
+  name              String // الاسم (رباعي)
+  nickName          String // اسم الشهرة
+  profession        String // المهنة
   birthDate         DateTime // تاريخ الميلاد
   nationalId        String   @unique // رقم الهوية الوطنية
-  maritalStatus     String   // الحالة الاجتماعية (متزوج/أعزب)
-  residenceLocation String   // العنوان التفصيلي
+  maritalStatus     String // الحالة الاجتماعية (متزوج/أعزب)
+  residenceLocation String // العنوان التفصيلي
   hiringDate        DateTime // تاريخ التعيين
-  hiringType        String   // نوع التعيين (دوام كامل/جزئي)
+  hiringType        String // نوع التعيين (دوام كامل/جزئي)
   email             String?  @unique // البريد
-  administration    String   // الادارة
-  actualWork        String   // العمل الفعلي
-  phoneNumber       String   // رقم الهاتف
-  notes             String?  // ملاحظات
-  
-  
-  // Spouse Information (بيانات الزوج/الزوجة)
-  spouse            Spouse[]
-  
-  // Children Information (الأبناء)
-  children          Child[]
-  
-  // Parents Information (بيانات الوالدين)
+  administration    String // الادارة
+  actualWork        String // العمل الفعلي
+  phoneNumber       String // رقم الهاتف
+  notes             String? // ملاحظات
 
-  father            Father?
-  mother            Mother?
+  // Relationships
+  relationships Relationship[] // العلاقات
 
-  // Siblings Information (الأخوة والأخوات)
-  siblings          Sibling[]
-  
   // Metadata
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("employees")
 }
 
-model Spouse {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId        String   @unique @db.Uuid
-  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  name              String   // اسم الزوج/الزوجة
+model Relationship {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId String @db.Uuid
+
+  relationshipType  String // نوع العلاقة (أب/أم/أخ/أخت)
+  name              String // اسم الزوج/الزوجة
   nationalId        String   @unique // رقم الهوية الوطنية
   birthDate         DateTime // تاريخ الميلاد
-  birthPlace        String?  // مكان الميلاد
-  profession        String?  // المهنة
-  notes             String?  // ملاحظات
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("spouses")
-}
+  birthPlace        String? // مكان الميلاد
+  profession        String? // المهنة
+  spouseName        String? // اسم الزوج/الزوجة
+  residenceLocation String // محل الاقامة للعمل
+  notes             String? // ملاحظات
 
-model Child {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId        String   @unique @db.Uuid
-  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  name              String   // الاسم رباعي
-  birthDate         DateTime // تاريخ الميلاد
-  profession        String?  // المهنة
-  spouseName        String?  // اسم الزوج/الزوجة
-  residenceLocation String   // محل الاقامة للعمل
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("children")
-}
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-model Father {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId        String   @unique @db.Uuid
-  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  name              String   // اسم الوالد رباعي
-  nationalId        String?  // رقم الهوية
-  profession        String?  // المهنة
-  birthDate         DateTime // تاريخ الميلاد
-  birthPlace        String?  // مكان الميلاد
-  residenceLocation String?  // محل الاقامة للعمل
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("Father")
-}
-
-
-model Mother {
- id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId        String   @unique @db.Uuid
-  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
-  name              String   // اسم الوالد رباعي
-  nationalId        String?  // رقم الهوية
-  profession        String?  // المهنة
-  birthDate         DateTime // تاريخ الميلاد
-  birthPlace        String?  // مكان الميلاد
-  residenceLocation String?  // محل الاقامة للعمل
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("Mother")
-}
-
-
-model Sibling {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId        String   @db.Uuid
-  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  name              String   // الاسم رباعي
-  birthDate         DateTime // تاريخ الميلاد
-  profession        String?  // المهنة
-  spouseName        String?  // اسم الزوج/الزوجة
-  residenceLocation String   // محل الاقامة للعمل
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@map("siblings")
+  @@map("relationships")
 }

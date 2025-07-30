@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { User, LogOut, Settings } from 'lucide-react'
 
 const Header = () => {
   const { data: session, status } = useSession()
@@ -13,57 +13,49 @@ const Header = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={40}
-              height={40}
-              className="h-8 w-auto"
-            />
-            <span className="ml-2 text-xl font-semibold text-gray-900">
-              User Management
-            </span>
+    <div className="flex items-center space-x-4">
+      {status === 'loading' ? (
+        <div className="animate-pulse flex items-center space-x-2">
+          <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
+          <div className="h-4 bg-gray-300 rounded w-20"></div>
+        </div>
+      ) : session?.user ? (
+        <div className="flex items-center space-x-3">
+          {/* User Avatar and Info */}
+          <div className="flex items-center space-x-3 bg-gray-50 rounded-lg px-3 py-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-sm font-medium text-gray-900">
+                {session.user.name || session.user.username}
+              </div>
+              <div className="text-xs text-gray-500">
+                مرحباً بك
+              </div>
+            </div>
           </div>
-
-          {/* User info and actions */}
-          <div className="flex items-center space-x-4">
-            {status === 'loading' ? (
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-300 rounded w-20"></div>
-              </div>
-            ) : session?.user ? (
-              <>
-                <div className="flex items-center space-x-3">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Welcome, </span>
-                    <span className="font-medium text-gray-900">
-                      {session.user.name || session.user.username}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleSignOut}
-                  variant="outline"
-                  size="sm"
-                  className="text-sm"
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <div className="text-sm text-gray-500">
-                Not signed in
-              </div>
-            )}
+          
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">تسجيل خروج</span>
+            </Button>
           </div>
         </div>
-      </div>
-    </header>
+      ) : (
+        <div className="flex items-center space-x-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+          <User className="w-4 h-4" />
+          <span>غير مسجل دخول</span>
+        </div>
+      )}
+    </div>
   )
 }
 

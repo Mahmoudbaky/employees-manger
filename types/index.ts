@@ -1,53 +1,65 @@
-export interface User {
+import { createEmployeeSchema } from '@/lib/validators';
+import { z } from 'zod';
+
+
+
+export type Employee = z.infer<typeof createEmployeeSchema> & {
   id: string
-  // Personal Information
-  fullName: string
-  monthName: string
-  birthDate: string
-  workAddress: string
-  appointmentDate: string
-  currentWork: string
-  email: string
-  mobile: string
+  createdAt: Date
+  updatedAt: Date
+};
 
-  // Family Information
-  spouseInfo: FamilyMember[]
-  children: FamilyMember[]
-  siblings: Sibling[]
 
-  // Parents Information
-  fatherName: string
-  fatherIdNumber: string
-  fatherBirthInfo: string
-  fatherProfession: string
-  fatherResidence: string
-  motherName: string
-  motherIdNumber: string
-  motherBirthInfo: string
-  motherProfession: string
-  motherResidence: string
+// export interface User {
+//   id: string
+//   // Personal Information
+//   fullName: string
+//   monthName: string
+//   birthDate: string
+//   workAddress: string
+//   appointmentDate: string
+//   currentWork: string
+//   email: string
+//   mobile: string
 
-  // Declaration
-  signature: string
-  declarationDate: string
-  createdAt: string
-  updatedAt: string
-}
+//   // Family Information
+//   spouseInfo: FamilyMember[]
+//   children: FamilyMember[]
+//   siblings: Sibling[]
 
-export interface FamilyMember {
-  id: string
-  name: string
-  profession: string
-  birthDate: string
-  birthPlace: string
-  idNumber: string
-  notes: string
-}
+//   // Parents Information
+//   fatherName: string
+//   fatherIdNumber: string
+//   fatherBirthInfo: string
+//   fatherProfession: string
+//   fatherResidence: string
+//   motherName: string
+//   motherIdNumber: string
+//   motherBirthInfo: string
+//   motherProfession: string
+//   motherResidence: string
 
-export interface Sibling {
-  id: string
-  name: string
-  profession: string
-  birthDate: string
-  residence: string
-}
+//   // Declaration
+//   signature: string
+//   declarationDate: string
+//   createdAt: string
+//   updatedAt: string
+// }
+
+// export interface FamilyMember {
+//   id: string
+//   name: string
+//   profession: string
+//   birthDate: string
+//   birthPlace: string
+//   idNumber: string
+//   notes: string
+// }
+
+// export interface Sibling {
+//   id: string
+//   name: string
+//   profession: string
+//   birthDate: string
+//   residence: string
+// }

@@ -1,278 +1,545 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { createEmployee, type EmployeeFormInput } from "@/lib/actions/employee.actions"
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
+import { Plus, Trash2, User, Users } from 'lucide-react'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { createEmployee } from '@/lib/actions/employee.actions'
+import { createEmployeeFormSchema } from '@/lib/validators'
 
-interface EmployeeFormProps {
-  onSuccess?: () => void
-}
 
-export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+type FormData = z.infer<typeof createEmployeeFormSchema>;
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setLoading(true)
-    setError(null)
-    setSuccess(false)
+const defaultValues: FormData = {
+  name: "",
+  nickName: "",
+  profession: "",
+  birthDate: "",
+  nationalId: "",
+  maritalStatus: "single",
+  residenceLocation: "",
+  hiringDate: "",
+  hiringType: "full-time",
+  email: "",
+  administration: "",
+  actualWork: "",
+  phoneNumber: "",
+  notes: "",
+  relationships: []
+};
 
-    const formData = new FormData(event.currentTarget)
-    
-    const employeeData = {
-      arabicName: formData.get("arabicName") as string,
-      nickName: formData.get("nickName") as string,
-      profession: formData.get("profession") as string,
-      birthDate: formData.get("birthDate") as string,
-      nationalId: formData.get("nationalId") as string,
-      maritalStatus: formData.get("maritalStatus") as "متزوج" | "أعزب" | "مطلق" | "أرمل",
-      residenceLocation: formData.get("residenceLocation") as string,
-      hiringDate: formData.get("hiringDate") as string,
-      hiringType: formData.get("hiringType") as "دوام كامل" | "دوام جزئي" | "عقد",
-      email: formData.get("email") as string,
-      administration: formData.get("administration") as string,
-      actualWork: formData.get("actualWork") as string,
-      phoneNumber: formData.get("phoneNumber") as string,
-      notes: formData.get("notes") as string,
-    }
+const EmployeeForm = () => {
+  const router = useRouter()
 
+  // Form state management
+  const form = useForm<FormData>({
+    resolver: zodResolver(createEmployeeFormSchema),
+    defaultValues
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "relationships"
+  });
+
+  // Handle form submission
+  const onSubmit = async (values: FormData) => {
     try {
-      const result = await createEmployee(employeeData)
+      // Transform form data to match the API schema
+      const transformedData = {
+        ...values,
+        birthDate: new Date(values.birthDate),
+        hiringDate: new Date(values.hiringDate),
+        maritalStatus: (values.maritalStatus === 'single' ? 'أعزب' : 
+                      values.maritalStatus === 'married' ? 'متزوج' :
+                      values.maritalStatus === 'divorced' ? 'مطلق' : 'أرمل') as 'أعزب' | 'متزوج' | 'مطلق' | 'أرمل',
+        hiringType: (values.hiringType === 'full-time' ? 'دوام كامل' :
+                    values.hiringType === 'part-time' ? 'دوام جزئي' :
+                    values.hiringType === 'contract' ? 'عقد' : 'مؤقت') as 'دوام كامل' | 'دوام جزئي' | 'عقد',
+        relationships: values.relationships.map(rel => ({
+          ...rel,
+          birthDate: new Date(rel.birthDate)
+        }))
+      };
+
+
+      console.log("Transformed Data:", transformedData);
+
+      const result = await createEmployee(transformedData as any);   // for now
       
       if (result.success) {
-        setSuccess(true)
-        event.currentTarget.reset()
-        onSuccess?.()
+        toast("تم إنشاء الموظف بنجاح");
+        router.push("/employees");
       } else {
-        setError(result.error || "حدث خطأ غير متوقع")
+        toast(result.error || "حدث خطأ أثناء إنشاء الموظف");
       }
-    } catch (err) {
-      setError("حدث خطأ أثناء إرسال البيانات")
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      toast("حدث خطأ أثناء إنشاء الموظف");
     }
-  }
+  };
+
+  const addRelationship = () => {
+    append({
+      relationshipType: "",
+      name: "",
+      nationalId: "",
+      birthDate: "",
+      birthPlace: "",
+      profession: "",
+      spouseName: "",
+      residenceLocation: "",
+      notes: ""
+    });
+  };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">إضافة موظف جديد</CardTitle>
-        <CardDescription className="text-center">
-          يرجى ملء جميع البيانات المطلوبة لإضافة موظف جديد
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">البيانات الأساسية</h3>
-            
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Basic Employee Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Basic Information (المعلومات الأساسية)
+            </CardTitle>
+            <CardDescription>Employee personal and professional details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="arabicName">الاسم (رباعي) *</Label>
-                <Input
-                  id="arabicName"
-                  name="arabicName"
-                  required
-                  placeholder="أدخل الاسم الرباعي"
-                  dir="rtl"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="nickName">اسم الشهرة *</Label>
-                <Input
-                  id="nickName"
-                  name="nickName"
-                  required
-                  placeholder="أدخل اسم الشهرة"
-                  dir="rtl"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="profession">المهنة *</Label>
-                <Input
-                  id="profession"
-                  name="profession"
-                  required
-                  placeholder="أدخل المهنة"
-                  dir="rtl"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="birthDate">تاريخ الميلاد *</Label>
-                <Input
-                  id="birthDate"
-                  name="birthDate"
-                  type="date"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="nationalId">رقم الهوية الوطنية *</Label>
-                <Input
-                  id="nationalId"
-                  name="nationalId"
-                  required
-                  placeholder="أدخل رقم الهوية الوطنية"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="maritalStatus">الحالة الاجتماعية *</Label>
-                <select
-                  id="maritalStatus"
-                  name="maritalStatus"
-                  required
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                >
-                  <option value="">اختر الحالة الاجتماعية</option>
-                  <option value="أعزب">أعزب</option>
-                  <option value="متزوج">متزوج</option>
-                  <option value="مطلق">مطلق</option>
-                  <option value="أرمل">أرمل</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="residenceLocation">العنوان التفصيلي *</Label>
-              <Input
-                id="residenceLocation"
-                name="residenceLocation"
-                required
-                placeholder="أدخل العنوان التفصيلي"
-                dir="rtl"
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name (الاسم رباعي) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="nickName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nickname (اسم الشهرة) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter nickname" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
 
-          {/* Work Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">بيانات العمل</h3>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="hiringDate">تاريخ التعيين *</Label>
-                <Input
-                  id="hiringDate"
-                  name="hiringDate"
-                  type="date"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="hiringType">نوع التعيين *</Label>
-                <select
-                  id="hiringType"
-                  name="hiringType"
-                  required
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                >
-                  <option value="">اختر نوع التعيين</option>
-                  <option value="دوام كامل">دوام كامل</option>
-                  <option value="دوام جزئي">دوام جزئي</option>
-                  <option value="عقد">عقد</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="administration">الإدارة *</Label>
-                <Input
-                  id="administration"
-                  name="administration"
-                  required
-                  placeholder="أدخل الإدارة"
-                  dir="rtl"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="actualWork">العمل الفعلي *</Label>
-                <Input
-                  id="actualWork"
-                  name="actualWork"
-                  required
-                  placeholder="أدخل العمل الفعلي"
-                  dir="rtl"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">بيانات الاتصال</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">البريد الإلكتروني</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="أدخل البريد الإلكتروني"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">رقم الهاتف *</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  required
-                  placeholder="أدخل رقم الهاتف"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="notes">ملاحظات</Label>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={3}
-                className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                placeholder="أدخل أي ملاحظات إضافية"
-                dir="rtl"
+              <FormField
+                control={form.control}
+                name="profession"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profession (المهنة) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter profession" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="birthDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Birth Date (تاريخ الميلاد) *</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
 
-          {/* Error and Success Messages */}
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-600 text-sm">{error}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="nationalId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>National ID (رقم الهوية الوطنية) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter national ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="maritalStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Marital Status (الحالة الاجتماعية) *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select marital status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="single">أعزب</SelectItem>
+                        <SelectItem value="married">متزوج</SelectItem>
+                        <SelectItem value="divorced">مطلق</SelectItem>
+                        <SelectItem value="widowed">أرمل</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          )}
-          
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-green-600 text-sm">تم إضافة الموظف بنجاح!</p>
-            </div>
-          )}
 
-          {/* Submit Button */}
-          <div className="flex justify-center pt-4">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full md:w-auto px-8"
-            >
-              {loading ? "جاري الحفظ..." : "حفظ البيانات"}
+            <FormField
+              control={form.control}
+              name="residenceLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Residence Address (العنوان التفصيلي) *</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Enter detailed address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Separator />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="hiringDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hiring Date (تاريخ التعيين) *</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="hiringType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hiring Type (نوع التعيين) *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select hiring type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="full-time">Full Time (دوام كامل)</SelectItem>
+                        <SelectItem value="part-time">Part Time (دوام جزئي)</SelectItem>
+                        <SelectItem value="contract">Contract (عقد)</SelectItem>
+                        <SelectItem value="temporary">Temporary (مؤقت)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="administration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Administration (الإدارة) *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select administration" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="human-resources">Human Resources (الموارد البشرية)</SelectItem>
+                        <SelectItem value="finance">Finance (المالية)</SelectItem>
+                        <SelectItem value="operations">Operations (العمليات)</SelectItem>
+                        <SelectItem value="it">Information Technology (تقنية المعلومات)</SelectItem>
+                        <SelectItem value="marketing">Marketing (التسويق)</SelectItem>
+                        <SelectItem value="legal">Legal Affairs (الشؤون القانونية)</SelectItem>
+                        <SelectItem value="procurement">Procurement (المشتريات)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="actualWork"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Actual Work (العمل الفعلي) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter actual work" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email (البريد الإلكتروني)</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="Enter email address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number (رقم الهاتف) *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter phone number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (ملاحظات)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Enter any additional notes" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Relationships Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Family Relationships (العلاقات العائلية)
+            </CardTitle>
+            <CardDescription>Add family members and their information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {fields.map((field, index) => (
+              <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">Relationship #{index + 1}</h4>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => remove(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.relationshipType`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Relationship Type (نوع العلاقة) *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select relationship type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="father">Father (أب)</SelectItem>
+                            <SelectItem value="mother">Mother (أم)</SelectItem>
+                            <SelectItem value="spouse">Spouse (زوج/زوجة)</SelectItem>
+                            <SelectItem value="son">Son (ابن)</SelectItem>
+                            <SelectItem value="daughter">Daughter (ابنة)</SelectItem>
+                            <SelectItem value="brother">Brother (أخ)</SelectItem>
+                            <SelectItem value="sister">Sister (أخت)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name (الاسم) *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.nationalId`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>National ID (رقم الهوية) *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter national ID" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.birthDate`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Birth Date (تاريخ الميلاد) *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.birthPlace`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Birth Place (مكان الميلاد)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter birth place" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.profession`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profession (المهنة)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter profession" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.spouseName`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Spouse Name (اسم الزوج/الزوجة)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter spouse name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`relationships.${index}.residenceLocation`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Residence Location (محل الإقامة) *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter residence location" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name={`relationships.${index}.notes`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes (ملاحظات)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Enter any notes" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+
+            <Button type="button" variant="outline" onClick={addRelationship} className="w-full bg-transparent">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Relationship
             </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-4">
+          <Button type="button" variant="outline" onClick={() => router.push("/employees")}>
+            Cancel
+          </Button>
+          <Button type="submit">Register Employee</Button>
+        </div>
+      </form>
+    </Form>
   )
 }
+
+export default EmployeeForm

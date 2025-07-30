@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { deleteEmployee } from "@/lib/actions/employee.actions"
+// import { deleteEmployee } from "@/lib/actions/employee.actions"
 
 type Employee = {
   id: string
@@ -33,25 +33,25 @@ interface EmployeesTableProps {
 export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟`)) {
-      return
-    }
+  // const handleDelete = async (id: string, name: string) => {
+  //   if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟`)) {
+  //     return
+  //   }
 
-    setDeletingId(id)
-    try {
-      const result = await deleteEmployee(id)
-      if (result.success) {
-        onEmployeeDeleted?.()
-      } else {
-        alert(result.error || "حدث خطأ أثناء حذف الموظف")
-      }
-    } catch (error) {
-      alert("حدث خطأ أثناء حذف الموظف")
-    } finally {
-      setDeletingId(null)
-    }
-  }
+  //   setDeletingId(id)
+  //   try {
+  //     const result = await deleteEmployee(id)
+  //     if (result.success) {
+  //       onEmployeeDeleted?.()
+  //     } else {
+  //       alert(result.error || "حدث خطأ أثناء حذف الموظف")
+  //     }
+  //   } catch (error) {
+  //     alert("حدث خطأ أثناء حذف الموظف")
+  //   } finally {
+  //     setDeletingId(null)
+  //   }
+  // }
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ar-SA', {
@@ -122,7 +122,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === employee.id}
-                        onClick={() => handleDelete(employee.id, employee.arabicName)}
+                        onClick={() => {}}
                       >
                         {deletingId === employee.id ? "جاري الحذف..." : "حذف"}
                       </Button>
@@ -155,7 +155,9 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                       variant="destructive"
                       size="sm"
                       disabled={deletingId === employee.id}
-                      onClick={() => handleDelete(employee.id, employee.arabicName)}
+                      onClick={() => {
+                        // handleDelete(employee.id, employee.arabicName)
+                      }}
                     >
                       {deletingId === employee.id ? "حذف..." : "حذف"}
                     </Button>
