@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Employee } from "@/types"
+import { useRouter } from "next/navigation"
 
 
 interface EmployeesTableProps {
@@ -12,6 +13,7 @@ interface EmployeesTableProps {
 }
 
 export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableProps) {
+  const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   // const handleDelete = async (id: string, name: string) => {
@@ -90,7 +92,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                         size="sm"
                         onClick={() => {
                           // TODO: Add view/edit functionality
-                          alert("سيتم إضافة وظيفة العرض/التعديل قريباً")
+                          router.push(`/employees/employee/${employee.id}`)
                         }}
                       >
                         عرض
@@ -123,7 +125,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        alert("سيتم إضافة وظيفة العرض/التعديل قريباً")
+                        // TODO: Add view/edit functionality
                       }}
                     >
                       عرض

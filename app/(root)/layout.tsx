@@ -21,7 +21,7 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-20">
               {/* Logo and Brand Section */}
               <div className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <Link href="/employees" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                   <div className="relative">
                     <Image
                       src="/logo.png"
