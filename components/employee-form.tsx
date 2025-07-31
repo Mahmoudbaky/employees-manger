@@ -17,6 +17,7 @@ import { createEmployee } from '@/lib/actions/employee.actions'
 import { createEmployeeFormSchema } from '@/lib/validators'
 
 
+
 type FormData = z.infer<typeof createEmployeeFormSchema>;
 
 const defaultValues: FormData = {
@@ -71,10 +72,9 @@ const EmployeeForm = () => {
         }))
       };
 
-
-      console.log("Transformed Data:", transformedData);
-
       const result = await createEmployee(transformedData as any);   // for now
+
+   
       
       if (result.success) {
         toast("تم إنشاء الموظف بنجاح");
@@ -109,9 +109,9 @@ const EmployeeForm = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Basic Information (المعلومات الأساسية)
+              المعلومات الأساسية
             </CardTitle>
-            <CardDescription>Employee personal and professional details</CardDescription>
+            <CardDescription>تفاصيل الموظف الشخصية والمهنية</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,7 +120,7 @@ const EmployeeForm = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name (الاسم رباعي) *</FormLabel>
+                    <FormLabel>الاسم رباعي *</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter full name" {...field} />
                     </FormControl>
@@ -133,7 +133,7 @@ const EmployeeForm = () => {
                 name="nickName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nickname (اسم الشهرة) *</FormLabel>
+                    <FormLabel>اسم الشهرة *</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter nickname" {...field} />
                     </FormControl>
@@ -149,7 +149,7 @@ const EmployeeForm = () => {
                 name="profession"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Profession (المهنة) *</FormLabel>
+                    <FormLabel>المهنة *</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter profession" {...field} />
                     </FormControl>
@@ -162,7 +162,7 @@ const EmployeeForm = () => {
                 name="birthDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Birth Date (تاريخ الميلاد) *</FormLabel>
+                    <FormLabel>تاريخ الميلاد *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -178,7 +178,7 @@ const EmployeeForm = () => {
                 name="nationalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>National ID (رقم الهوية الوطنية) *</FormLabel>
+                    <FormLabel>رقم الهوية الوطنية *</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter national ID" {...field} />
                     </FormControl>
@@ -191,7 +191,7 @@ const EmployeeForm = () => {
                 name="maritalStatus"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Marital Status (الحالة الاجتماعية) *</FormLabel>
+                    <FormLabel>الحالة الاجتماعية *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -216,7 +216,7 @@ const EmployeeForm = () => {
               name="residenceLocation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Residence Address (العنوان التفصيلي) *</FormLabel>
+                  <FormLabel>العنوان التفصيلي *</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Enter detailed address" {...field} />
                   </FormControl>
@@ -233,7 +233,7 @@ const EmployeeForm = () => {
                 name="hiringDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hiring Date (تاريخ التعيين) *</FormLabel>
+                    <FormLabel>تاريخ التعيين *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -246,7 +246,7 @@ const EmployeeForm = () => {
                 name="hiringType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hiring Type (نوع التعيين) *</FormLabel>
+                    <FormLabel>نوع التعيين *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -254,10 +254,10 @@ const EmployeeForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="full-time">Full Time (دوام كامل)</SelectItem>
-                        <SelectItem value="part-time">Part Time (دوام جزئي)</SelectItem>
-                        <SelectItem value="contract">Contract (عقد)</SelectItem>
-                        <SelectItem value="temporary">Temporary (مؤقت)</SelectItem>
+                        <SelectItem value="full-time">دوام كامل</SelectItem>
+                        <SelectItem value="part-time">دوام جزئي</SelectItem>
+                        <SelectItem value="contract">عقد</SelectItem>
+                        <SelectItem value="temporary">مؤقت</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -272,7 +272,7 @@ const EmployeeForm = () => {
                 name="administration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Administration (الإدارة) *</FormLabel>
+                    <FormLabel>الإدارة *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -280,13 +280,13 @@ const EmployeeForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="human-resources">Human Resources (الموارد البشرية)</SelectItem>
-                        <SelectItem value="finance">Finance (المالية)</SelectItem>
-                        <SelectItem value="operations">Operations (العمليات)</SelectItem>
-                        <SelectItem value="it">Information Technology (تقنية المعلومات)</SelectItem>
-                        <SelectItem value="marketing">Marketing (التسويق)</SelectItem>
-                        <SelectItem value="legal">Legal Affairs (الشؤون القانونية)</SelectItem>
-                        <SelectItem value="procurement">Procurement (المشتريات)</SelectItem>
+                        <SelectItem value="human-resources">الموارد البشرية</SelectItem>
+                        <SelectItem value="finance">المالية</SelectItem>
+                        <SelectItem value="operations">العمليات</SelectItem>
+                        <SelectItem value="it">تقنية المعلومات</SelectItem>
+                        <SelectItem value="marketing">التسويق</SelectItem>
+                        <SelectItem value="legal">الشؤون القانونية</SelectItem>
+                        <SelectItem value="procurement">المشتريات</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -298,9 +298,9 @@ const EmployeeForm = () => {
                 name="actualWork"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Actual Work (العمل الفعلي) *</FormLabel>
+                    <FormLabel>العمل الفعلي *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter actual work" {...field} />
+                      <Input placeholder="أدخل العمل الفعلي" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -314,9 +314,9 @@ const EmployeeForm = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email (البريد الإلكتروني)</FormLabel>
+                    <FormLabel>البريد الإلكتروني</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter email address" {...field} />
+                      <Input type="email" placeholder="أدخل عنوان البريد الإلكتروني" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -327,9 +327,9 @@ const EmployeeForm = () => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number (رقم الهاتف) *</FormLabel>
+                    <FormLabel>رقم الهاتف *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter phone number" {...field} />
+                      <Input placeholder="أدخل رقم الهاتف" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -342,9 +342,9 @@ const EmployeeForm = () => {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (ملاحظات)</FormLabel>
+                  <FormLabel>ملاحظات</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter any additional notes" {...field} />
+                    <Textarea placeholder="أدخل أي ملاحظات إضافية" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

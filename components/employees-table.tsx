@@ -3,27 +3,8 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-// import { deleteEmployee } from "@/lib/actions/employee.actions"
+import { Employee } from "@/types"
 
-type Employee = {
-  id: string
-  arabicName: string
-  nickName: string
-  profession: string
-  birthDate: Date
-  nationalId: string
-  maritalStatus: string
-  residenceLocation: string
-  hiringDate: Date
-  hiringType: string
-  email: string | null
-  administration: string
-  actualWork: string
-  phoneNumber: string
-  notes: string | null
-  createdAt: Date
-  updatedAt: Date
-}
 
 interface EmployeesTableProps {
   employees: Employee[]
@@ -54,7 +35,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
   // }
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('ar-SA', {
+    return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
@@ -75,11 +56,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl text-center">قائمة الموظفين</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-6">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -98,13 +75,13 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
             <tbody>
               {employees.map((employee) => (
                 <tr key={employee.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3" dir="rtl">{employee.arabicName}</td>
+                  <td className="p-3" dir="rtl">{employee.name}</td>
                   <td className="p-3" dir="rtl">{employee.nickName}</td>
                   <td className="p-3" dir="rtl">{employee.profession}</td>
                   <td className="p-3">{employee.nationalId}</td>
                   <td className="p-3" dir="rtl">{employee.administration}</td>
                   <td className="p-3" dir="rtl">{employee.hiringType}</td>
-                  <td className="p-3">{formatDate(employee.hiringDate)}</td>
+                  <td className="p-3">{formatDate(new Date(employee.hiringDate))}</td>
                   <td className="p-3">{employee.phoneNumber}</td>
                   <td className="p-3 text-center">
                     <div className="flex justify-center gap-2">
@@ -140,7 +117,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
             <Card key={employee.id} className="p-4">
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-lg" dir="rtl">{employee.arabicName}</h3>
+                  <h3 className="font-semibold text-lg" dir="rtl">{employee.name}</h3>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -169,14 +146,13 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                   <p><span className="font-medium">رقم الهوية:</span> {employee.nationalId}</p>
                   <p><span className="font-medium">الإدارة:</span> <span dir="rtl">{employee.administration}</span></p>
                   <p><span className="font-medium">نوع التعيين:</span> <span dir="rtl">{employee.hiringType}</span></p>
-                  <p><span className="font-medium">تاريخ التعيين:</span> {formatDate(employee.hiringDate)}</p>
+                  <p><span className="font-medium">تاريخ التعيين:</span> {formatDate(new Date(employee.hiringDate))}</p>
                   <p><span className="font-medium">رقم الهاتف:</span> {employee.phoneNumber}</p>
                 </div>
               </div>
             </Card>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
   )
 }
