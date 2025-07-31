@@ -3,12 +3,24 @@
 import { prisma } from "@/db/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { createEmployeeFormSchema } from "../validators"
+import { createEmployeeApiSchema } from "../validators"
+
+interface relationship {
+  relationshipType: string;
+  name: string;
+  nationalId: string;
+  birthDate: Date;
+  birthPlace?: string;
+  profession?: string;
+  spouseName?: string;
+  residenceLocation: string;
+  notes?: string;
+}
 
 
-export async function createEmployee(data: z.infer<typeof createEmployeeFormSchema>) {
+export async function createEmployee(data: z.infer<typeof createEmployeeApiSchema>) {
   try {
-    const validatedData = createEmployeeFormSchema.parse(data)
+    const validatedData = createEmployeeApiSchema.parse(data)
 
     const empData = {
       name: validatedData.name,
@@ -42,7 +54,7 @@ export async function createEmployee(data: z.infer<typeof createEmployeeFormSche
       }))
     }
 
-    console.log("relationships data to be saved:", relationships)
+    
 
     const employee = await prisma.employee.create({
       data: empData,
@@ -50,7 +62,7 @@ export async function createEmployee(data: z.infer<typeof createEmployeeFormSche
 
     if (relationships.length > 0) {
       await prisma.relationship.createMany({
-        data: relationships.map(rel => ({
+        data: relationships.map((rel: relationship) => ({
           employeeId: employee.id,
           ...rel,
         }))

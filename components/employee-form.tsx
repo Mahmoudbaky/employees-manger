@@ -10,33 +10,44 @@ import { Plus, Trash2, User, Users } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createEmployee } from '@/lib/actions/employee.actions'
-import { createEmployeeFormSchema } from '@/lib/validators'
+import { createEmployeeApiSchema, createEmployeeFormSchema } from '@/lib/validators'
+
+// Define the API data type that matches your Prisma schema
+interface CreateEmployeeData {
+  name: string;
+  nickName: string;
+  profession: string;
+  birthDate: Date;
+  nationalId: string;
+  maritalStatus: string;
+  residenceLocation: string;
+  hiringDate: Date;
+  hiringType: string;
+  email?: string;
+  administration: string;
+  actualWork: string;
+  phoneNumber: string;
+  notes?: string;
+  relationships: {
+    relationshipType: string;
+    name: string;
+    nationalId: string;
+    birthDate: Date;
+    birthPlace?: string;
+    profession?: string;
+    spouseName?: string;
+    residenceLocation: string;
+    notes?: string;
+  }[];
+}
 
 
 
 type FormData = z.infer<typeof createEmployeeFormSchema>;
-
-const defaultValues: FormData = {
-  name: "",
-  nickName: "",
-  profession: "",
-  birthDate: "",
-  nationalId: "",
-  maritalStatus: "single",
-  residenceLocation: "",
-  hiringDate: "",
-  hiringType: "full-time",
-  email: "",
-  administration: "",
-  actualWork: "",
-  phoneNumber: "",
-  notes: "",
-  relationships: []
-};
 
 const EmployeeForm = () => {
   const router = useRouter()
@@ -44,7 +55,23 @@ const EmployeeForm = () => {
   // Form state management
   const form = useForm<FormData>({
     resolver: zodResolver(createEmployeeFormSchema),
-    defaultValues
+    defaultValues: {
+      name: "",
+      nickName: "",
+      profession: "",
+      birthDate: "",
+      nationalId: "",
+      maritalStatus: "",
+      residenceLocation: "",
+      hiringDate: "",
+      hiringType: "",
+      email: "",
+      administration: "",
+      actualWork: "",
+      phoneNumber: "",
+      notes: "",
+      relationships: []
+    }
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -53,29 +80,42 @@ const EmployeeForm = () => {
   });
 
   // Handle form submission
-  const onSubmit = async (values: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async (values) => {
     try {
+
       // Transform form data to match the API schema
-      const transformedData = {
-        ...values,
+      const transformedData: CreateEmployeeData = {
+        name: values.name,
+        nickName: values.nickName,
+        profession: values.profession,
         birthDate: new Date(values.birthDate),
+        nationalId: values.nationalId,
+        maritalStatus: values.maritalStatus as string,
+        residenceLocation: values.residenceLocation,
         hiringDate: new Date(values.hiringDate),
-        maritalStatus: (values.maritalStatus === 'single' ? 'أعزب' : 
-                      values.maritalStatus === 'married' ? 'متزوج' :
-                      values.maritalStatus === 'divorced' ? 'مطلق' : 'أرمل') as 'أعزب' | 'متزوج' | 'مطلق' | 'أرمل',
-        hiringType: (values.hiringType === 'full-time' ? 'دوام كامل' :
-                    values.hiringType === 'part-time' ? 'دوام جزئي' :
-                    values.hiringType === 'contract' ? 'عقد' : 'مؤقت') as 'دوام كامل' | 'دوام جزئي' | 'عقد',
+        hiringType: values.hiringType,
+        email: values.email || undefined,
+        administration: values.administration,
+        actualWork: values.actualWork,
+        phoneNumber: values.phoneNumber,
+        notes: values.notes || undefined,
         relationships: values.relationships.map(rel => ({
-          ...rel,
-          birthDate: new Date(rel.birthDate)
+          relationshipType: rel.relationshipType,
+          name: rel.name,
+          nationalId: rel.nationalId,
+          birthDate: new Date(rel.birthDate),
+          birthPlace: rel.birthPlace || undefined,
+          profession: rel.profession || undefined,
+          spouseName: rel.spouseName || undefined,
+          residenceLocation: rel.residenceLocation,
+          notes: rel.notes || undefined
         }))
       };
 
-      const result = await createEmployee(transformedData as any);   // for now
 
-   
+      const result = await createEmployee(transformedData as z.infer<typeof createEmployeeApiSchema>);
       
+
       if (result.success) {
         toast("تم إنشاء الموظف بنجاح");
         router.push("/employees");
