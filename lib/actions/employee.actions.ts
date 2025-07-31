@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { createEmployeeApiSchema } from "../validators"
 
-interface relationship {
+interface Relationship {
   relationshipType: string;
   name: string;
   nationalId: string;
@@ -39,18 +39,18 @@ export async function createEmployee(data: z.infer<typeof createEmployeeApiSchem
       notes: validatedData.notes || null,
     }
 
-    let relationships: any = []
+    let relationships: Relationship[] = []
     if (validatedData.relationships && validatedData.relationships.length > 0) {
       relationships = validatedData.relationships.map(rel => ({
         relationshipType: rel.relationshipType,
         name: rel.name,
         nationalId: rel.nationalId,
         birthDate: new Date(rel.birthDate),
-        birthPlace: rel.birthPlace || null,
-        profession: rel.profession || null,
-        spouseName: rel.spouseName || null,
+        birthPlace: rel.birthPlace || undefined,
+        profession: rel.profession || undefined,
+        spouseName: rel.spouseName || undefined,
         residenceLocation: rel.residenceLocation,
-        notes: rel.notes || null,
+        notes: rel.notes || undefined,
       }))
     }
 
@@ -62,7 +62,7 @@ export async function createEmployee(data: z.infer<typeof createEmployeeApiSchem
 
     if (relationships.length > 0) {
       await prisma.relationship.createMany({
-        data: relationships.map((rel: relationship) => ({
+        data: relationships.map((rel: Relationship) => ({
           employeeId: employee.id,
           ...rel,
         }))
