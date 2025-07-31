@@ -3,7 +3,7 @@
 import React from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { User, LogOut, Settings } from 'lucide-react'
+import { User, LogOut } from 'lucide-react'
 
 const Header = () => {
   const { data: session, status } = useSession()
