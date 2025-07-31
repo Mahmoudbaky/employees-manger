@@ -60,20 +60,20 @@ export function SignInForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>تسجيل الدخول إلى حسابك</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            أدخل اسم المستخدم أدناه لتسجيل الدخول إلى حسابك
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">اسم المستخدم</Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder="أدخل اسم المستخدم الخاص بك"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -81,13 +81,8 @@ export function SignInForm({
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+                  <Label htmlFor="password">كلمة المرور</Label>
+
                 </div>
                 <Input
                   id="password"
@@ -99,18 +94,13 @@ export function SignInForm({
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full">
-                  Login
+                  تسجيل الدخول
                 </Button>
                
               </div>
               
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?
-              <a href="#" className="underline underline-offset-4">
-                Sign up
-              </a>
-            </div>
+          
           </form>
         </CardContent>
       </Card>

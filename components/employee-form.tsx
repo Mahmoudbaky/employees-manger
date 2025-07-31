@@ -188,7 +188,7 @@ const EmployeeForm = ({
                   <FormItem>
                     <FormLabel>الاسم رباعي *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter full name" {...field} />
+                      <Input placeholder="ادخل الاسم الكامل" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,7 +201,7 @@ const EmployeeForm = ({
                   <FormItem>
                     <FormLabel>اسم الشهرة *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter nickname" {...field} />
+                      <Input placeholder="ادخل اسم الشهرة" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -217,7 +217,7 @@ const EmployeeForm = ({
                   <FormItem>
                     <FormLabel>المهنة *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter profession" {...field} />
+                      <Input placeholder="ادخل المهنة" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -244,9 +244,9 @@ const EmployeeForm = ({
                 name="nationalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>رقم الهوية الوطنية *</FormLabel>
+                    <FormLabel>  رقم البطاقة  *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter national ID" {...field} />
+                      <Input placeholder="ادخل رقم البطاقة" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -261,7 +261,7 @@ const EmployeeForm = ({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select marital status" />
+                          <SelectValue placeholder="اختر الحالة الاجتماعية" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -284,7 +284,7 @@ const EmployeeForm = ({
                 <FormItem>
                   <FormLabel>العنوان التفصيلي *</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter detailed address" {...field} />
+                    <Textarea placeholder="ادخل العنوان التفصيلي" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -316,14 +316,14 @@ const EmployeeForm = ({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select hiring type" />
+                          <SelectValue placeholder="اختر نوع التعيين" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="full-time">دوام كامل</SelectItem>
-                        <SelectItem value="part-time">دوام جزئي</SelectItem>
-                        <SelectItem value="contract">عقد</SelectItem>
+                        <SelectItem value="full-time">دائم </SelectItem>
                         <SelectItem value="temporary">مؤقت</SelectItem>
+                        <SelectItem value="secondment">معار</SelectItem>
+                        <SelectItem value="mandate">ندب</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -338,21 +338,34 @@ const EmployeeForm = ({
                 name="administration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>الإدارة *</FormLabel>
+                    <FormLabel>الاداره والمنطقة التابع لها*</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select administration" />
+                          <SelectValue placeholder="اختر الإدارة و المنطقة" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="human-resources">الموارد البشرية</SelectItem>
-                        <SelectItem value="finance">المالية</SelectItem>
-                        <SelectItem value="operations">العمليات</SelectItem>
-                        <SelectItem value="it">تقنية المعلومات</SelectItem>
-                        <SelectItem value="marketing">التسويق</SelectItem>
-                        <SelectItem value="legal">الشؤون القانونية</SelectItem>
-                        <SelectItem value="procurement">المشتريات</SelectItem>
+                        <SelectItem value="projects">اﻹداره المركزيه للمشروعات</SelectItem>
+                        <SelectItem value="finance">اﻹداره العامة للشئون المالية</SelectItem>
+                        <SelectItem value="admin">اﻹداره العامة للشئون اﻹداريه</SelectItem>
+                        <SelectItem value="it">نظم المعلومات والتحول الرقمي</SelectItem>
+                        <SelectItem value="technical-office">المكتب الفني</SelectItem>
+                        <SelectItem value="public-relations">العلاقات العامة</SelectItem>
+                        <SelectItem value="security">اﻷمن</SelectItem>
+                        <SelectItem value="contracts">التعاقدات</SelectItem>
+                        <SelectItem value="legal">الشئون القانونية</SelectItem>
+                        <SelectItem value="development">التنميه المتكاملة</SelectItem>
+                        <SelectItem value="president-office">مكتب رئيس الجهاز</SelectItem>
+                        <SelectItem value="vp-office">مكتب نائب رئيس الجهاز</SelectItem>
+                        <SelectItem value="planning">التخطيط والمتابعه</SelectItem>
+                        <SelectItem value="north-sinai">منطقه تعمير شمال سيناء</SelectItem>
+                        <SelectItem value="south-sinai">منطقة تعمير جنوب سيناء</SelectItem>
+                        <SelectItem value="portsaid">منطقة تعمير بورسعيد</SelectItem>
+                        <SelectItem value="ismailia">منطقة تعمير الاسماعيليه</SelectItem>
+                        <SelectItem value="kantara">منطقة تعميرالقنطره</SelectItem>
+                        <SelectItem value="east-kantara">منطقة تعمير القنطرة شرق</SelectItem>
+                        <SelectItem value="suez">منطقة تعمير السويس</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -454,17 +467,17 @@ const EmployeeForm = ({
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select relationship type" />
+                              <SelectValue placeholder="اختر نوع العلاقة" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="father">أب (Father)</SelectItem>
-                            <SelectItem value="mother">أم (Mother)</SelectItem>
-                            <SelectItem value="spouse">زوج/زوجة (Spouse)</SelectItem>
-                            <SelectItem value="son">ابن (Son)</SelectItem>
-                            <SelectItem value="daughter">ابنة (Daughter)</SelectItem>
-                            <SelectItem value="brother">أخ (Brother)</SelectItem>
-                            <SelectItem value="sister">أخت (Sister)</SelectItem>
+                            <SelectItem value="father">أب</SelectItem>
+                            <SelectItem value="mother">أم</SelectItem>
+                            <SelectItem value="spouse">زوج/زوجة</SelectItem>
+                            <SelectItem value="son">ابن</SelectItem>
+                            <SelectItem value="daughter">ابنة</SelectItem>
+                            <SelectItem value="brother">أخ</SelectItem>
+                            <SelectItem value="sister">أخت</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -604,7 +617,7 @@ const EmployeeForm = ({
           <Button type="submit">
             {type === "Update" ? "تحديث الموظف" : "تسجيل موظف جديد"}
           </Button>
-          <Button
+          {type === "Update" && employeeId && (<Button
             type="button"
             variant="destructive"
             size="sm"
@@ -616,7 +629,7 @@ const EmployeeForm = ({
             }}
           >
             حذف الموظف
-          </Button> 
+          </Button> )}
         </div>
       </form>
     </Form>
