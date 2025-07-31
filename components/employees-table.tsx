@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Employee } from "@/types"
 import { useRouter } from "next/navigation"
+import { deleteEmployee } from "@/lib/actions/employee.actions"
 
 
 interface EmployeesTableProps {
@@ -16,25 +17,26 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  // const handleDelete = async (id: string, name: string) => {
-  //   if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟`)) {
-  //     return
-  //   }
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الموظف "${name}"؟`)) {
+      return
+    }
 
-  //   setDeletingId(id)
-  //   try {
-  //     const result = await deleteEmployee(id)
-  //     if (result.success) {
-  //       onEmployeeDeleted?.()
-  //     } else {
-  //       alert(result.error || "حدث خطأ أثناء حذف الموظف")
-  //     }
-  //   } catch (error) {
-  //     alert("حدث خطأ أثناء حذف الموظف")
-  //   } finally {
-  //     setDeletingId(null)
-  //   }
-  // }
+    setDeletingId(id)
+    try {
+      const result = await deleteEmployee(id)
+      if (result.success) {
+        router.refresh() // Force a refresh of the current page
+        onEmployeeDeleted?.()
+      } else {
+        alert(result.error || "حدث خطأ أثناء حذف الموظف")
+      }
+    } catch (error) {
+      alert("حدث خطأ أثناء حذف الموظف")
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -91,17 +93,25 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          // TODO: Add view/edit functionality
                           router.push(`/employees/employee/${employee.id}`)
                         }}
                       >
                         عرض
                       </Button>
                       <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          router.push(`/employees/${employee.id}`)
+                        }}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === employee.id}
-                        onClick={() => {}}
+                        onClick={() => handleDelete(employee.id, employee.name)}
                       >
                         {deletingId === employee.id ? "جاري الحذف..." : "حذف"}
                       </Button>
@@ -125,7 +135,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        // TODO: Add view/edit functionality
+                        router.push(`/employees/employee/${employee.id}`)
                       }}
                     >
                       عرض
@@ -134,9 +144,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                       variant="destructive"
                       size="sm"
                       disabled={deletingId === employee.id}
-                      onClick={() => {
-                        // handleDelete(employee.id, employee.arabicName)
-                      }}
+                      onClick={() => handleDelete(employee.id, employee.name)}
                     >
                       {deletingId === employee.id ? "حذف..." : "حذف"}
                     </Button>

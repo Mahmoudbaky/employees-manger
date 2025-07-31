@@ -13,11 +13,13 @@ import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { createEmployee } from '@/lib/actions/employee.actions'
+import { createEmployee, deleteEmployee } from '@/lib/actions/employee.actions'
 import { createEmployeeApiSchema, createEmployeeFormSchema } from '@/lib/validators'
+import { updateEmployee } from '@/lib/actions/employee.actions'
+
 
 // Define the API data type that matches your Prisma schema
-interface CreateEmployeeData {
+interface EmployeeData {
   name: string;
   nickName: string;
   profession: string;
@@ -49,28 +51,48 @@ interface CreateEmployeeData {
 
 type FormData = z.infer<typeof createEmployeeFormSchema>;
 
-const EmployeeForm = () => {
+const EmployeeForm = ({
+  type,
+  employee,
+  employeeId,
+}: {
+  type: "Create" | "Update";
+  employee?: EmployeeData;
+  employeeId?: string;
+}) => {
   const router = useRouter()
+
+  
 
   // Form state management
   const form = useForm<FormData>({
     resolver: zodResolver(createEmployeeFormSchema),
     defaultValues: {
-      name: "",
-      nickName: "",
-      profession: "",
-      birthDate: "",
-      nationalId: "",
-      maritalStatus: "",
-      residenceLocation: "",
-      hiringDate: "",
-      hiringType: "",
-      email: "",
-      administration: "",
-      actualWork: "",
-      phoneNumber: "",
-      notes: "",
-      relationships: []
+      name: employee?.name || "",
+      nickName: employee?.nickName || "",
+      profession: employee?.profession || "",
+      birthDate: employee?.birthDate ? new Date(employee.birthDate).toISOString().split('T')[0] : "",
+      nationalId: employee?.nationalId || "",
+      maritalStatus: employee?.maritalStatus || "",
+      residenceLocation: employee?.residenceLocation || "",
+      hiringDate: employee?.hiringDate ? new Date(employee.hiringDate).toISOString().split('T')[0] : "",
+      hiringType: employee?.hiringType || "",
+      email: employee?.email || "",
+      administration: employee?.administration || "",
+      actualWork: employee?.actualWork || "",
+      phoneNumber: employee?.phoneNumber || "",
+      notes: employee?.notes || "",
+      relationships: employee?.relationships?.map(rel => ({
+        relationshipType: rel.relationshipType,
+        name: rel.name,
+        nationalId: rel.nationalId,
+        birthDate: new Date(rel.birthDate).toISOString().split('T')[0],
+        birthPlace: rel.birthPlace || "",
+        profession: rel.profession || "",
+        spouseName: rel.spouseName || "",
+        residenceLocation: rel.residenceLocation,
+        notes: rel.notes || ""
+      })) || []
     }
   });
 
@@ -84,7 +106,7 @@ const EmployeeForm = () => {
     try {
 
       // Transform form data to match the API schema
-      const transformedData: CreateEmployeeData = {
+      const transformedData: EmployeeData = {
         name: values.name,
         nickName: values.nickName,
         profession: values.profession,
@@ -112,18 +134,22 @@ const EmployeeForm = () => {
         }))
       };
 
-
-      const result = await createEmployee(transformedData as z.infer<typeof createEmployeeApiSchema>);
+      let result;
+      if (type === "Update" && employeeId) {
+        result = await updateEmployee(employeeId, transformedData as z.infer<typeof createEmployeeApiSchema>);
+      } else {
+        result = await createEmployee(transformedData as z.infer<typeof createEmployeeApiSchema>);
+      }
       
 
       if (result.success) {
-        toast("تم إنشاء الموظف بنجاح");
+        toast(type === "Update" ? "تم تحديث الموظف بنجاح" : "تم إنشاء الموظف بنجاح");
         router.push("/employees");
       } else {
-        toast(result.error || "حدث خطأ أثناء إنشاء الموظف");
+        toast(result.error || (type === "Update" ? "حدث خطأ أثناء تحديث الموظف" : "حدث خطأ أثناء إنشاء الموظف"));
       }
     } catch (error) {
-      toast("حدث خطأ أثناء إنشاء الموظف");
+      toast(type === "Update" ? "حدث خطأ أثناء تحديث الموظف" : "حدث خطأ أثناء إنشاء الموظف");
     }
   };
 
@@ -232,7 +258,7 @@ const EmployeeForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>الحالة الاجتماعية *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select marital status" />
@@ -287,7 +313,7 @@ const EmployeeForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>نوع التعيين *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select hiring type" />
@@ -313,7 +339,7 @@ const EmployeeForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>الإدارة *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select administration" />
@@ -398,9 +424,9 @@ const EmployeeForm = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Family Relationships (العلاقات العائلية)
+              العلاقات العائلية
             </CardTitle>
-            <CardDescription>Add family members and their information</CardDescription>
+            <CardDescription>إضافة أفراد الأسرة ومعلوماتهم</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {fields.map((field, index) => (
@@ -424,21 +450,21 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.relationshipType`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Relationship Type (نوع العلاقة) *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel> نوع العلاقة *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select relationship type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="father">Father (أب)</SelectItem>
-                            <SelectItem value="mother">Mother (أم)</SelectItem>
-                            <SelectItem value="spouse">Spouse (زوج/زوجة)</SelectItem>
-                            <SelectItem value="son">Son (ابن)</SelectItem>
-                            <SelectItem value="daughter">Daughter (ابنة)</SelectItem>
-                            <SelectItem value="brother">Brother (أخ)</SelectItem>
-                            <SelectItem value="sister">Sister (أخت)</SelectItem>
+                            <SelectItem value="father">أب (Father)</SelectItem>
+                            <SelectItem value="mother">أم (Mother)</SelectItem>
+                            <SelectItem value="spouse">زوج/زوجة (Spouse)</SelectItem>
+                            <SelectItem value="son">ابن (Son)</SelectItem>
+                            <SelectItem value="daughter">ابنة (Daughter)</SelectItem>
+                            <SelectItem value="brother">أخ (Brother)</SelectItem>
+                            <SelectItem value="sister">أخت (Sister)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -450,9 +476,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name (الاسم) *</FormLabel>
+                        <FormLabel>الاسم *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter name" {...field} />
+                          <Input placeholder="أدخل الاسم" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -466,9 +492,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.nationalId`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>National ID (رقم الهوية) *</FormLabel>
+                        <FormLabel>رقم الهوية الوطنية *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter national ID" {...field} />
+                          <Input placeholder="أدخل رقم الهوية" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -479,7 +505,7 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.birthDate`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Birth Date (تاريخ الميلاد) *</FormLabel>
+                        <FormLabel>تاريخ الميلاد  *</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} />
                         </FormControl>
@@ -495,9 +521,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.birthPlace`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Birth Place (مكان الميلاد)</FormLabel>
+                        <FormLabel>مكان الميلاد </FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter birth place" {...field} />
+                          <Input placeholder="أدخل مكان الميلاد" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -508,9 +534,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.profession`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Profession (المهنة)</FormLabel>
+                        <FormLabel>المهنة</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter profession" {...field} />
+                          <Input placeholder="أدخل المهنة" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -524,9 +550,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.spouseName`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Spouse Name (اسم الزوج/الزوجة)</FormLabel>
+                        <FormLabel>اسم الزوج/الزوجة </FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter spouse name" {...field} />
+                          <Input placeholder="أدخل اسم الزوج/الزوجة" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -537,9 +563,9 @@ const EmployeeForm = () => {
                     name={`relationships.${index}.residenceLocation`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Residence Location (محل الإقامة) *</FormLabel>
+                        <FormLabel>محل الإقامة *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter residence location" {...field} />
+                          <Input placeholder="أدخل محل الإقامة" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -552,9 +578,9 @@ const EmployeeForm = () => {
                   name={`relationships.${index}.notes`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (ملاحظات)</FormLabel>
+                      <FormLabel>ملاحظات</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Enter any notes" {...field} />
+                        <Textarea placeholder="أدخل أي ملاحظات" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -565,17 +591,32 @@ const EmployeeForm = () => {
 
             <Button type="button" variant="outline" onClick={addRelationship} className="w-full bg-transparent">
               <Plus className="h-4 w-4 mr-2" />
-              Add Relationship
+              إضافة علاقة
             </Button>
           </CardContent>
         </Card>
 
         {/* Submit Button */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-start space-x-4">
           <Button type="button" variant="outline" onClick={() => router.push("/employees")}>
-            Cancel
+            رجوع 
           </Button>
-          <Button type="submit">Register Employee</Button>
+          <Button type="submit">
+            {type === "Update" ? "تحديث الموظف" : "تسجيل موظف جديد"}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              const { success } = await deleteEmployee(employeeId || "");
+              if (success) {
+                router.push("/employees");
+              }
+            }}
+          >
+            حذف الموظف
+          </Button> 
         </div>
       </form>
     </Form>

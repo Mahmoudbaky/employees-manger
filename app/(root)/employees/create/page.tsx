@@ -19,7 +19,7 @@ const page = () => {
         </div>
         
         {/* Employee form */}
-        <EmployeeForm />
+        <EmployeeForm type="Create" />
       </div>
     </div>
   )

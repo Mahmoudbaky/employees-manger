@@ -8,24 +8,25 @@ import Link from "next/link"
 // Employee interface matching the database schema
 import { Employee } from "@/types"
 
-const employeesData = await getEmployees();
-
-
-// Convert fetched employees to match the Employee type (convert Dates to strings)
-const employees: Employee[] = (employeesData?.employees ?? []).map((emp: any) => ({
-  ...emp,
-  birthDate: emp.birthDate instanceof Date ? emp.birthDate.toISOString() : emp.birthDate,
-  hiringDate: emp.hiringDate instanceof Date ? emp.hiringDate.toISOString() : emp.hiringDate,
-  createdAt: emp.createdAt instanceof Date ? emp.createdAt.toISOString() : emp.createdAt,
-  updatedAt: emp.updatedAt instanceof Date ? emp.updatedAt.toISOString() : emp.updatedAt,
-}));
-
 export const metadata = {
   title: "الموظفين",
   description: "إدارة وعرض بيانات الموظفين في المؤسسة",
 }
 
-const page = () => {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
+const page = async () => {
+  const employeesData = await getEmployees();
+
+  // Convert fetched employees to match the Employee type (convert Dates to strings)
+  const employees: Employee[] = (employeesData?.employees ?? []).map((emp: any) => ({
+    ...emp,
+    birthDate: emp.birthDate instanceof Date ? emp.birthDate.toISOString() : emp.birthDate,
+    hiringDate: emp.hiringDate instanceof Date ? emp.hiringDate.toISOString() : emp.hiringDate,
+    createdAt: emp.createdAt instanceof Date ? emp.createdAt.toISOString() : emp.createdAt,
+    updatedAt: emp.updatedAt instanceof Date ? emp.updatedAt.toISOString() : emp.updatedAt,
+  }));
 
 
   return (
