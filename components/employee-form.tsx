@@ -17,7 +17,6 @@ import { createEmployee, deleteEmployee } from '@/lib/actions/employee.actions'
 import { createEmployeeApiSchema, createEmployeeFormSchema } from '@/lib/validators'
 import { updateEmployee } from '@/lib/actions/employee.actions'
 
-
 // Define the API data type that matches your Prisma schema
 interface EmployeeData {
   name: string;
@@ -62,7 +61,7 @@ const EmployeeForm = ({
 }) => {
   const router = useRouter()
 
-  
+  console.log("Employee Data:", employee);
 
   // Form state management
   const form = useForm<FormData>({
@@ -246,7 +245,16 @@ const EmployeeForm = ({
                   <FormItem>
                     <FormLabel>  رقم البطاقة  *</FormLabel>
                     <FormControl>
-                      <Input placeholder="ادخل رقم البطاقة" {...field} />
+                      <Input 
+                        type="number"
+                        placeholder="ادخل رقم البطاقة" 
+                        {...field}
+                        onChange={(e) => {
+                          // Only allow numeric input
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          field.onChange(value);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -471,13 +479,30 @@ const EmployeeForm = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="father">أب</SelectItem>
-                            <SelectItem value="mother">أم</SelectItem>
-                            <SelectItem value="spouse">زوج/زوجة</SelectItem>
-                            <SelectItem value="son">ابن</SelectItem>
-                            <SelectItem value="daughter">ابنة</SelectItem>
-                            <SelectItem value="brother">أخ</SelectItem>
-                            <SelectItem value="sister">أخت</SelectItem>
+                            {
+                              (() => {
+                                const currentRelationships = form.watch('relationships') || [];
+                                const currentValue = form.watch(`relationships.${index}.relationshipType`);
+                                const hasFather = currentRelationships.some((rel, idx) => idx !== index && rel.relationshipType === 'father');
+                                const hasMother = currentRelationships.some((rel, idx) => idx !== index && rel.relationshipType === 'mother');
+                                
+                                return (
+                                  <>
+                                    {(!hasFather || currentValue === 'father') && (
+                                      <SelectItem value="father">أب</SelectItem>
+                                    )}
+                                    {(!hasMother || currentValue === 'mother') && (
+                                      <SelectItem value="mother">أم</SelectItem>
+                                    )}
+                                    <SelectItem value="spouse">زوج/زوجة</SelectItem>
+                                    <SelectItem value="son">ابن</SelectItem>
+                                    <SelectItem value="daughter">ابنة</SelectItem>
+                                    <SelectItem value="brother">أخ</SelectItem>
+                                    <SelectItem value="sister">أخت</SelectItem>
+                                  </>
+                                );
+                              })()
+                            }
                           </SelectContent>
                         </Select>
                         <FormMessage />

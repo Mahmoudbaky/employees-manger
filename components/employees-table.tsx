@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Employee } from "@/types"
 import { useRouter } from "next/navigation"
 import { deleteEmployee } from "@/lib/actions/employee.actions"
-
+import { formateHiringType } from "@/lib/utils"
 
 interface EmployeesTableProps {
   employees: Employee[]
@@ -46,6 +46,9 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
     })
   }
 
+
+ 
+
   if (employees.length === 0) {
     return (
       <Card>
@@ -68,7 +71,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                 <th className="text-right p-3 font-semibold bg-gray-50">الاسم</th>
                 <th className="text-right p-3 font-semibold bg-gray-50">اسم الشهرة</th>
                 <th className="text-right p-3 font-semibold bg-gray-50">المهنة</th>
-                <th className="text-right p-3 font-semibold bg-gray-50">رقم الهوية</th>
+                <th className="text-right p-3 font-semibold bg-gray-50">رقم البطاقة</th>
                 <th className="text-right p-3 font-semibold bg-gray-50">الإدارة</th>
                 <th className="text-right p-3 font-semibold bg-gray-50">نوع التعيين</th>
                 <th className="text-right p-3 font-semibold bg-gray-50">تاريخ التعيين</th>
@@ -84,7 +87,7 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                   <td className="p-3" dir="rtl">{employee.profession}</td>
                   <td className="p-3">{employee.nationalId}</td>
                   <td className="p-3" dir="rtl">{employee.administration}</td>
-                  <td className="p-3" dir="rtl">{employee.hiringType}</td>
+                  <td className="p-3" dir="rtl">{formateHiringType(employee.hiringType)}</td>
                   <td className="p-3">{formatDate(new Date(employee.hiringDate))}</td>
                   <td className="p-3">{employee.phoneNumber}</td>
                   <td className="p-3 text-center">
@@ -107,14 +110,14 @@ export function EmployeesTable({ employees, onEmployeeDeleted }: EmployeesTableP
                       >
                         تعديل
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === employee.id}
                         onClick={() => handleDelete(employee.id, employee.name)}
                       >
                         {deletingId === employee.id ? "جاري الحذف..." : "حذف"}
-                      </Button>
+                      </Button> */}
                     </div>
                   </td>
                 </tr>

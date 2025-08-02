@@ -3,6 +3,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { formateHiringType , formateMaritalStatus } from '@/lib/utils';
 
 
 const EmployeeDetailsPage  = async (props: {
@@ -62,7 +63,7 @@ const EmployeeDetailsPage  = async (props: {
               </div>
               
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>رقم الهوية الوطنية</label>
+                <label className='text-sm font-medium text-gray-700'>رقم البطاقة</label>
                 <p className='text-gray-900 bg-gray-50 p-3 rounded-md'>{employee.nationalId}</p>
               </div>
               
@@ -80,7 +81,7 @@ const EmployeeDetailsPage  = async (props: {
               
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>الحالة الاجتماعية</label>
-                <p className='text-gray-900 bg-gray-50 p-3 rounded-md'>{employee.maritalStatus}</p>
+                <p className='text-gray-900 bg-gray-50 p-3 rounded-md'>{formateMaritalStatus(employee.maritalStatus)}</p>
               </div>
               
               <div className='space-y-2'>
@@ -141,7 +142,7 @@ const EmployeeDetailsPage  = async (props: {
               
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>نوع التعيين</label>
-                <p className='text-gray-900 bg-gray-50 p-3 rounded-md'>{employee.hiringType}</p>
+                <p className='text-gray-900 bg-gray-50 p-3 rounded-md'>{formateHiringType(employee.hiringType)}</p>
               </div>
             </div>
           </CardContent>
@@ -172,7 +173,7 @@ const EmployeeDetailsPage  = async (props: {
                       </div>
                       
                       <div className='space-y-2'>
-                        <label className='text-sm font-medium text-gray-700'>رقم الهوية الوطنية</label>
+                        <label className='text-sm font-medium text-gray-700'>رقم البطاقة</label>
                         <p className='text-gray-900 bg-gray-50 p-2 rounded-md text-sm'>{relationship.nationalId}</p>
                       </div>
                       

@@ -36,7 +36,7 @@ const page = async () => {
         <div className='flex flex-col md:flex-row items-start md:items-center justify-between bg-white'>
           <div className='mb-4 md:mb-0'>
             <h1 className='text-3xl font-bold text-gray-900'>الموظفين</h1>
-            <p className='text-gray-600 mt-1'>إدارة وعرض بيانات الموظفين في المؤسسة</p>
+            <p className='text-gray-600 mt-1'>إدارة وعرض بيانات الموظفين في جهاز تعمير سيناء</p>
           </div>
           <Button variant="default"  size="lg" className='bg-blue-600 hover:bg-blue-700'>
             <Link href="/employees/create">اضافة موظف</Link>
