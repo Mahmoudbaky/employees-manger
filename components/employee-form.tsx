@@ -1,21 +1,47 @@
-"use client"
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
-import { Plus, Trash2, User, Users } from 'lucide-react'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, User, Users, X } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { toast } from "sonner";
-import { useRouter } from 'next/navigation'
-import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createEmployee, deleteEmployee } from '@/lib/actions/employee.actions'
-import { createEmployeeApiSchema, createEmployeeFormSchema } from '@/lib/validators'
-import { updateEmployee } from '@/lib/actions/employee.actions'
+import { useRouter } from "next/navigation";
+import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { createEmployee, deleteEmployee } from "@/lib/actions/employee.actions";
+import {
+  createEmployeeApiSchema,
+  createEmployeeFormSchema,
+} from "@/lib/validators";
+import { updateEmployee } from "@/lib/actions/employee.actions";
+import { EdgeStoreProvider, useEdgeStore } from "@/lib/edgestore";
+import { SingleImageDropzone } from "./upload/single-image";
+import { UploaderProvider } from "./upload/uploader-provider";
+import { useState } from "react";
 
 // Define the API data type that matches your Prisma schema
 interface EmployeeData {
@@ -33,6 +59,9 @@ interface EmployeeData {
   actualWork: string;
   phoneNumber: string;
   notes?: string;
+  personalImageUrl?: string;
+  idFrontImageUrl?: string;
+  idBackImageUrl?: string;
   relationships: {
     relationshipType: string;
     name: string;
@@ -46,8 +75,6 @@ interface EmployeeData {
   }[];
 }
 
-
-
 type FormData = z.infer<typeof createEmployeeFormSchema>;
 
 const EmployeeForm = ({
@@ -59,9 +86,73 @@ const EmployeeForm = ({
   employee?: EmployeeData;
   employeeId?: string;
 }) => {
-  const router = useRouter()
+  const router = useRouter();
+  const { edgestore } = useEdgeStore();
 
-  console.log("Employee Data:", employee);
+  // State for uploaded images
+  const [personalPhotoUrl, setPersonalPhotoUrl] = useState<string | undefined>(
+    employee?.personalImageUrl
+  );
+  const [idFrontUrl, setIdFrontUrl] = useState<string | undefined>(
+    employee?.idFrontImageUrl
+  );
+  const [idBackUrl, setIdBackUrl] = useState<string | undefined>(
+    employee?.idBackImageUrl
+  );
+
+  // Upload function for the UploaderProvider
+  const createUploadFn =
+    (setImageUrl: (url: string | undefined) => void) =>
+    async ({
+      file,
+      signal,
+      onProgressChange,
+    }: {
+      file: File;
+      signal: AbortSignal;
+      onProgressChange: (progress: number) => void;
+    }) => {
+      const res = await edgestore.myPublicImages.upload({
+        file,
+        signal,
+        onProgressChange,
+      });
+      console.log("Upload response:", res);
+      setImageUrl(res.url);
+      return { url: res.url };
+    };
+
+  // Remove image function
+  const removeImage = async (
+    imageUrl: string | undefined,
+    setImageUrl: (url: string | undefined) => void
+  ) => {
+    if (imageUrl) {
+      // Ask for confirmation
+      const confirmed = window.confirm("هل أنت متأكد من حذف هذه الصورة؟");
+      if (!confirmed) return;
+
+      // Remove from UI state immediately for better UX
+      setImageUrl(undefined);
+      toast("تم إزالة الصورة من النموذج");
+
+      // Try to delete from EdgeStore in the background (optional)
+      // If this fails, it's not critical - the image just becomes orphaned
+      edgestore.myPublicImages
+        .delete({
+          url: imageUrl,
+        })
+        .then(() => {
+          console.log("Image deleted from EdgeStore successfully");
+        })
+        .catch((error) => {
+          console.warn(
+            "Could not delete from EdgeStore (non-critical):",
+            error
+          );
+        });
+    }
+  };
 
   // Form state management
   const form = useForm<FormData>({
@@ -70,40 +161,47 @@ const EmployeeForm = ({
       name: employee?.name || "",
       nickName: employee?.nickName || "",
       profession: employee?.profession || "",
-      birthDate: employee?.birthDate ? new Date(employee.birthDate).toISOString().split('T')[0] : "",
+      birthDate: employee?.birthDate
+        ? new Date(employee.birthDate).toISOString().split("T")[0]
+        : "",
       nationalId: employee?.nationalId || "",
       maritalStatus: employee?.maritalStatus || "",
       residenceLocation: employee?.residenceLocation || "",
-      hiringDate: employee?.hiringDate ? new Date(employee.hiringDate).toISOString().split('T')[0] : "",
+      hiringDate: employee?.hiringDate
+        ? new Date(employee.hiringDate).toISOString().split("T")[0]
+        : "",
       hiringType: employee?.hiringType || "",
       email: employee?.email || "",
       administration: employee?.administration || "",
       actualWork: employee?.actualWork || "",
       phoneNumber: employee?.phoneNumber || "",
       notes: employee?.notes || "",
-      relationships: employee?.relationships?.map(rel => ({
-        relationshipType: rel.relationshipType,
-        name: rel.name,
-        nationalId: rel.nationalId,
-        birthDate: new Date(rel.birthDate).toISOString().split('T')[0],
-        birthPlace: rel.birthPlace || "",
-        profession: rel.profession || "",
-        spouseName: rel.spouseName || "",
-        residenceLocation: rel.residenceLocation,
-        notes: rel.notes || ""
-      })) || []
-    }
+      personalPhoto: employee?.personalImageUrl || "",
+      frontIdCard: employee?.idFrontImageUrl || "",
+      backIdCard: employee?.idBackImageUrl || "",
+      relationships:
+        employee?.relationships?.map((rel) => ({
+          relationshipType: rel.relationshipType,
+          name: rel.name,
+          nationalId: rel.nationalId,
+          birthDate: new Date(rel.birthDate).toISOString().split("T")[0],
+          birthPlace: rel.birthPlace || "",
+          profession: rel.profession || "",
+          spouseName: rel.spouseName || "",
+          residenceLocation: rel.residenceLocation,
+          notes: rel.notes || "",
+        })) || [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "relationships"
+    name: "relationships",
   });
 
   // Handle form submission
   const onSubmit: SubmitHandler<FormData> = async (values) => {
     try {
-
       // Transform form data to match the API schema
       const transformedData: EmployeeData = {
         name: values.name,
@@ -120,7 +218,10 @@ const EmployeeForm = ({
         actualWork: values.actualWork,
         phoneNumber: values.phoneNumber,
         notes: values.notes || undefined,
-        relationships: values.relationships.map(rel => ({
+        personalImageUrl: personalPhotoUrl,
+        idFrontImageUrl: idFrontUrl,
+        idBackImageUrl: idBackUrl,
+        relationships: values.relationships.map((rel) => ({
           relationshipType: rel.relationshipType,
           name: rel.name,
           nationalId: rel.nationalId,
@@ -129,26 +230,48 @@ const EmployeeForm = ({
           profession: rel.profession || undefined,
           spouseName: rel.spouseName || undefined,
           residenceLocation: rel.residenceLocation,
-          notes: rel.notes || undefined
-        }))
+          notes: rel.notes || undefined,
+        })),
       };
+
+      console.log(
+        "Transformed data for submission:",
+        transformedData.personalImageUrl,
+        transformedData.idFrontImageUrl,
+        transformedData.idBackImageUrl
+      );
 
       let result;
       if (type === "Update" && employeeId) {
-        result = await updateEmployee(employeeId, transformedData as z.infer<typeof createEmployeeApiSchema>);
+        result = await updateEmployee(
+          employeeId,
+          transformedData as z.infer<typeof createEmployeeApiSchema>
+        );
       } else {
-        result = await createEmployee(transformedData as z.infer<typeof createEmployeeApiSchema>);
+        result = await createEmployee(
+          transformedData as z.infer<typeof createEmployeeApiSchema>
+        );
       }
-      
 
       if (result.success) {
-        toast(type === "Update" ? "تم تحديث الموظف بنجاح" : "تم إنشاء الموظف بنجاح");
+        toast(
+          type === "Update" ? "تم تحديث الموظف بنجاح" : "تم إنشاء الموظف بنجاح"
+        );
         router.push("/employees");
       } else {
-        toast(result.error || (type === "Update" ? "حدث خطأ أثناء تحديث الموظف" : "حدث خطأ أثناء إنشاء الموظف"));
+        toast(
+          result.error ||
+            (type === "Update"
+              ? "حدث خطأ أثناء تحديث الموظف"
+              : "حدث خطأ أثناء إنشاء الموظف")
+        );
       }
     } catch (error) {
-      toast(type === "Update" ? "حدث خطأ أثناء تحديث الموظف" : "حدث خطأ أثناء إنشاء الموظف");
+      toast(
+        type === "Update"
+          ? "حدث خطأ أثناء تحديث الموظف"
+          : "حدث خطأ أثناء إنشاء الموظف"
+      );
     }
   };
 
@@ -162,7 +285,7 @@ const EmployeeForm = ({
       profession: "",
       spouseName: "",
       residenceLocation: "",
-      notes: ""
+      notes: "",
     });
   };
 
@@ -243,15 +366,15 @@ const EmployeeForm = ({
                 name="nationalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>  رقم البطاقة  *</FormLabel>
+                    <FormLabel> رقم البطاقة *</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         type="number"
-                        placeholder="ادخل رقم البطاقة" 
+                        placeholder="ادخل رقم البطاقة"
                         {...field}
                         onChange={(e) => {
                           // Only allow numeric input
-                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          const value = e.target.value.replace(/[^0-9]/g, "");
                           field.onChange(value);
                         }}
                       />
@@ -354,25 +477,57 @@ const EmployeeForm = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="projects">اﻹداره المركزيه للمشروعات</SelectItem>
-                        <SelectItem value="finance">اﻹداره العامة للشئون المالية</SelectItem>
-                        <SelectItem value="admin">اﻹداره العامة للشئون اﻹداريه</SelectItem>
-                        <SelectItem value="it">نظم المعلومات والتحول الرقمي</SelectItem>
-                        <SelectItem value="technical-office">المكتب الفني</SelectItem>
-                        <SelectItem value="public-relations">العلاقات العامة</SelectItem>
+                        <SelectItem value="projects">
+                          اﻹداره المركزيه للمشروعات
+                        </SelectItem>
+                        <SelectItem value="finance">
+                          اﻹداره العامة للشئون المالية
+                        </SelectItem>
+                        <SelectItem value="admin">
+                          اﻹداره العامة للشئون اﻹداريه
+                        </SelectItem>
+                        <SelectItem value="it">
+                          نظم المعلومات والتحول الرقمي
+                        </SelectItem>
+                        <SelectItem value="technical-office">
+                          المكتب الفني
+                        </SelectItem>
+                        <SelectItem value="public-relations">
+                          العلاقات العامة
+                        </SelectItem>
                         <SelectItem value="security">اﻷمن</SelectItem>
                         <SelectItem value="contracts">التعاقدات</SelectItem>
                         <SelectItem value="legal">الشئون القانونية</SelectItem>
-                        <SelectItem value="development">التنميه المتكاملة</SelectItem>
-                        <SelectItem value="president-office">مكتب رئيس الجهاز</SelectItem>
-                        <SelectItem value="vp-office">مكتب نائب رئيس الجهاز</SelectItem>
-                        <SelectItem value="planning">التخطيط والمتابعه</SelectItem>
-                        <SelectItem value="north-sinai">منطقه تعمير شمال سيناء</SelectItem>
-                        <SelectItem value="south-sinai">منطقة تعمير جنوب سيناء</SelectItem>
-                        <SelectItem value="portsaid">منطقة تعمير بورسعيد</SelectItem>
-                        <SelectItem value="ismailia">منطقة تعمير الاسماعيليه</SelectItem>
-                        <SelectItem value="kantara">منطقة تعميرالقنطره</SelectItem>
-                        <SelectItem value="east-kantara">منطقة تعمير القنطرة شرق</SelectItem>
+                        <SelectItem value="development">
+                          التنميه المتكاملة
+                        </SelectItem>
+                        <SelectItem value="president-office">
+                          مكتب رئيس الجهاز
+                        </SelectItem>
+                        <SelectItem value="vp-office">
+                          مكتب نائب رئيس الجهاز
+                        </SelectItem>
+                        <SelectItem value="planning">
+                          التخطيط والمتابعه
+                        </SelectItem>
+                        <SelectItem value="north-sinai">
+                          منطقه تعمير شمال سيناء
+                        </SelectItem>
+                        <SelectItem value="south-sinai">
+                          منطقة تعمير جنوب سيناء
+                        </SelectItem>
+                        <SelectItem value="portsaid">
+                          منطقة تعمير بورسعيد
+                        </SelectItem>
+                        <SelectItem value="ismailia">
+                          منطقة تعمير الاسماعيليه
+                        </SelectItem>
+                        <SelectItem value="kantara">
+                          منطقة تعميرالقنطره
+                        </SelectItem>
+                        <SelectItem value="east-kantara">
+                          منطقة تعمير القنطرة شرق
+                        </SelectItem>
                         <SelectItem value="suez">منطقة تعمير السويس</SelectItem>
                       </SelectContent>
                     </Select>
@@ -403,7 +558,11 @@ const EmployeeForm = ({
                   <FormItem>
                     <FormLabel>البريد الإلكتروني</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="أدخل عنوان البريد الإلكتروني" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="أدخل عنوان البريد الإلكتروني"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -422,6 +581,124 @@ const EmployeeForm = ({
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Three upload fields for personal photo and two for ID */}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Personal Photo */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">الصورة الشخصية</label>
+                {personalPhotoUrl ? (
+                  <div className="relative">
+                    <img
+                      src={personalPhotoUrl}
+                      alt="Personal Photo"
+                      className="w-[200px] h-[200px] object-cover rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() =>
+                        removeImage(personalPhotoUrl, setPersonalPhotoUrl)
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <UploaderProvider
+                    uploadFn={createUploadFn(setPersonalPhotoUrl)}
+                    autoUpload={true}
+                  >
+                    <SingleImageDropzone
+                      height={200}
+                      width={200}
+                      dropzoneOptions={{
+                        maxSize: 1024 * 1024 * 1, // 1 MB
+                      }}
+                    />
+                  </UploaderProvider>
+                )}
+              </div>
+
+              {/* ID Front */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  صورة البطاقة (أمامي)
+                </label>
+                {idFrontUrl ? (
+                  <div className="relative">
+                    <img
+                      src={idFrontUrl}
+                      alt="ID Front"
+                      className="w-[200px] h-[200px] object-cover rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => removeImage(idFrontUrl, setIdFrontUrl)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <UploaderProvider
+                    uploadFn={createUploadFn(setIdFrontUrl)}
+                    autoUpload={true}
+                  >
+                    <SingleImageDropzone
+                      height={200}
+                      width={200}
+                      dropzoneOptions={{
+                        maxSize: 1024 * 1024 * 1, // 1 MB
+                      }}
+                    />
+                  </UploaderProvider>
+                )}
+              </div>
+
+              {/* ID Back */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  صورة البطاقة (خلفي)
+                </label>
+                {idBackUrl ? (
+                  <div className="relative">
+                    <img
+                      src={idBackUrl}
+                      alt="ID Back"
+                      className="w-[200px] h-[200px] object-cover rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => removeImage(idBackUrl, setIdBackUrl)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <UploaderProvider
+                    uploadFn={createUploadFn(setIdBackUrl)}
+                    autoUpload={true}
+                  >
+                    <SingleImageDropzone
+                      height={200}
+                      width={200}
+                      dropzoneOptions={{
+                        maxSize: 1024 * 1024 * 1, // 1 MB
+                      }}
+                    />
+                  </UploaderProvider>
+                )}
+              </div>
             </div>
 
             <FormField
@@ -472,37 +749,53 @@ const EmployeeForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel> نوع العلاقة *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="اختر نوع العلاقة" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {
-                              (() => {
-                                const currentRelationships = form.watch('relationships') || [];
-                                const currentValue = form.watch(`relationships.${index}.relationshipType`);
-                                const hasFather = currentRelationships.some((rel, idx) => idx !== index && rel.relationshipType === 'father');
-                                const hasMother = currentRelationships.some((rel, idx) => idx !== index && rel.relationshipType === 'mother');
-                                
-                                return (
-                                  <>
-                                    {(!hasFather || currentValue === 'father') && (
-                                      <SelectItem value="father">أب</SelectItem>
-                                    )}
-                                    {(!hasMother || currentValue === 'mother') && (
-                                      <SelectItem value="mother">أم</SelectItem>
-                                    )}
-                                    <SelectItem value="spouse">زوج/زوجة</SelectItem>
-                                    <SelectItem value="son">ابن</SelectItem>
-                                    <SelectItem value="daughter">ابنة</SelectItem>
-                                    <SelectItem value="brother">أخ</SelectItem>
-                                    <SelectItem value="sister">أخت</SelectItem>
-                                  </>
-                                );
-                              })()
-                            }
+                            {(() => {
+                              const currentRelationships =
+                                form.watch("relationships") || [];
+                              const currentValue = form.watch(
+                                `relationships.${index}.relationshipType`
+                              );
+                              const hasFather = currentRelationships.some(
+                                (rel, idx) =>
+                                  idx !== index &&
+                                  rel.relationshipType === "father"
+                              );
+                              const hasMother = currentRelationships.some(
+                                (rel, idx) =>
+                                  idx !== index &&
+                                  rel.relationshipType === "mother"
+                              );
+
+                              return (
+                                <>
+                                  {(!hasFather ||
+                                    currentValue === "father") && (
+                                    <SelectItem value="father">أب</SelectItem>
+                                  )}
+                                  {(!hasMother ||
+                                    currentValue === "mother") && (
+                                    <SelectItem value="mother">أم</SelectItem>
+                                  )}
+                                  <SelectItem value="spouse">
+                                    زوج/زوجة
+                                  </SelectItem>
+                                  <SelectItem value="son">ابن</SelectItem>
+                                  <SelectItem value="daughter">ابنة</SelectItem>
+                                  <SelectItem value="brother">أخ</SelectItem>
+                                  <SelectItem value="sister">أخت</SelectItem>
+                                </>
+                              );
+                            })()}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -543,7 +836,7 @@ const EmployeeForm = ({
                     name={`relationships.${index}.birthDate`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>تاريخ الميلاد  *</FormLabel>
+                        <FormLabel>تاريخ الميلاد *</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} />
                         </FormControl>
@@ -590,7 +883,10 @@ const EmployeeForm = ({
                       <FormItem>
                         <FormLabel>اسم الزوج/الزوجة </FormLabel>
                         <FormControl>
-                          <Input placeholder="أدخل اسم الزوج/الزوجة" {...field} />
+                          <Input
+                            placeholder="أدخل اسم الزوج/الزوجة"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -627,7 +923,12 @@ const EmployeeForm = ({
               </div>
             ))}
 
-            <Button type="button" variant="outline" onClick={addRelationship} className="w-full bg-transparent">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addRelationship}
+              className="w-full bg-transparent"
+            >
               <Plus className="h-4 w-4 mr-2" />
               إضافة علاقة
             </Button>
@@ -636,29 +937,35 @@ const EmployeeForm = ({
 
         {/* Submit Button */}
         <div className="flex justify-start space-x-4">
-          <Button type="button" variant="outline" onClick={() => router.push("/employees")}>
-            رجوع 
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/employees")}
+          >
+            رجوع
           </Button>
           <Button type="submit">
             {type === "Update" ? "تحديث الموظف" : "تسجيل موظف جديد"}
           </Button>
-          {type === "Update" && employeeId && (<Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            onClick={async () => {
-              const { success } = await deleteEmployee(employeeId || "");
-              if (success) {
-                router.push("/employees");
-              }
-            }}
-          >
-            حذف الموظف
-          </Button> )}
+          {type === "Update" && employeeId && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={async () => {
+                const { success } = await deleteEmployee(employeeId || "");
+                if (success) {
+                  router.push("/employees");
+                }
+              }}
+            >
+              حذف الموظف
+            </Button>
+          )}
         </div>
       </form>
     </Form>
-  )
-}
+  );
+};
 
-export default EmployeeForm
+export default EmployeeForm;

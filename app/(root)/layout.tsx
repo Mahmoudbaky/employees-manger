@@ -3,10 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
 import MobileNav from "@/components/mobile-nav";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 // import Menu from "@/components/shared/header/menu";
 // import MainNav from "./main-nav";
-
 
 export default function RootLayout({
   children,
@@ -21,7 +21,10 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-20">
               {/* Logo and Brand Section */}
               <div className="flex items-center space-x-4">
-                <Link href="/employees" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <Link
+                  href="/employees"
+                  className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                >
                   <div className="relative">
                     <Image
                       src="/logo.png"
@@ -51,7 +54,7 @@ export default function RootLayout({
         {/* Main Content */}
         <main className="flex-1 container mx-auto py-8">
           <div className="bg-white p-6">
-            {children}
+            <EdgeStoreProvider>{children}</EdgeStoreProvider>
           </div>
         </main>
 

@@ -1,9 +1,10 @@
-"use server"
+"use server";
 
-import { prisma } from "@/db/prisma"
-import { revalidatePath } from "next/cache"
-import { z } from "zod"
-import { createEmployeeApiSchema } from "../validators"
+import { prisma } from "@/db/prisma";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { createEmployeeApiSchema } from "../validators";
+// import { saveImageUrl, getUserImages, deleteImageUrl } from "@/lib/db";
 
 interface Relationship {
   relationshipType: string;
@@ -17,10 +18,11 @@ interface Relationship {
   notes?: string;
 }
 
-
-export async function createEmployee(data: z.infer<typeof createEmployeeApiSchema>) {
+export async function createEmployee(
+  data: z.infer<typeof createEmployeeApiSchema>
+) {
   try {
-    const validatedData = createEmployeeApiSchema.parse(data)
+    const validatedData = createEmployeeApiSchema.parse(data);
 
     const empData = {
       name: validatedData.name,
@@ -37,11 +39,21 @@ export async function createEmployee(data: z.infer<typeof createEmployeeApiSchem
       actualWork: validatedData.actualWork,
       phoneNumber: validatedData.phoneNumber,
       notes: validatedData.notes || null,
-    }
+      personalImageUrl: validatedData.personalImageUrl || null,
+      idFrontImageUrl: validatedData.idFrontImageUrl || null,
+      idBackImageUrl: validatedData.idBackImageUrl || null,
+    };
 
-    let relationships: Relationship[] = []
+    console.log(
+      "Employee data to be created:",
+      empData.personalImageUrl,
+      empData.idFrontImageUrl,
+      empData.idBackImageUrl
+    );
+
+    let relationships: Relationship[] = [];
     if (validatedData.relationships && validatedData.relationships.length > 0) {
-      relationships = validatedData.relationships.map(rel => ({
+      relationships = validatedData.relationships.map((rel) => ({
         relationshipType: rel.relationshipType,
         name: rel.name,
         nationalId: rel.nationalId,
@@ -51,41 +63,41 @@ export async function createEmployee(data: z.infer<typeof createEmployeeApiSchem
         spouseName: rel.spouseName || undefined,
         residenceLocation: rel.residenceLocation,
         notes: rel.notes || undefined,
-      }))
+      }));
     }
-
-    
 
     const employee = await prisma.employee.create({
       data: empData,
-    })
+    });
 
     if (relationships.length > 0) {
       await prisma.relationship.createMany({
         data: relationships.map((rel: Relationship) => ({
           employeeId: employee.id,
           ...rel,
-        }))
-      })
+        })),
+      });
     }
-    
-    revalidatePath('/employees')
-    revalidatePath('/employees', 'page')
-    console.log("revalidatePath reached")
-    return { success: true, employee }
+
+    revalidatePath("/employees");
+    revalidatePath("/employees", "page");
+    console.log("revalidatePath reached");
+    return { success: true, employee };
   } catch (error) {
-    console.error("Error creating employee:", error)
+    console.error("Error creating employee:", error);
     if (error instanceof z.ZodError) {
-      return { success: false, error: "بيانات غير صحيحة" }
+      return { success: false, error: "بيانات غير صحيحة" };
     }
-    return { success: false, error: "حدث خطأ أثناء إنشاء الموظف" }
+    return { success: false, error: "حدث خطأ أثناء إنشاء الموظف" };
   }
 }
 
-
-export const updateEmployee = async (id: string, data: z.infer<typeof createEmployeeApiSchema>) => {
+export const updateEmployee = async (
+  id: string,
+  data: z.infer<typeof createEmployeeApiSchema>
+) => {
   try {
-    const validatedData = createEmployeeApiSchema.parse(data)
+    const validatedData = createEmployeeApiSchema.parse(data);
 
     const empData = {
       name: validatedData.name,
@@ -102,11 +114,14 @@ export const updateEmployee = async (id: string, data: z.infer<typeof createEmpl
       actualWork: validatedData.actualWork,
       phoneNumber: validatedData.phoneNumber,
       notes: validatedData.notes || null,
-    }
+      personalImageUrl: validatedData.personalImageUrl || null,
+      idFrontImageUrl: validatedData.idFrontImageUrl || null,
+      idBackImageUrl: validatedData.idBackImageUrl || null,
+    };
 
-    let relationships: Relationship[] = []
+    let relationships: Relationship[] = [];
     if (validatedData.relationships && validatedData.relationships.length > 0) {
-      relationships = validatedData.relationships.map(rel => ({
+      relationships = validatedData.relationships.map((rel) => ({
         relationshipType: rel.relationshipType,
         name: rel.name,
         nationalId: rel.nationalId,
@@ -116,75 +131,72 @@ export const updateEmployee = async (id: string, data: z.infer<typeof createEmpl
         spouseName: rel.spouseName || undefined,
         residenceLocation: rel.residenceLocation,
         notes: rel.notes || undefined,
-      }))
+      }));
     }
 
     const employee = await prisma.employee.update({
       where: { id },
-      data: empData
-    })
+      data: empData,
+    });
 
     if (relationships.length > 0) {
       await prisma.relationship.deleteMany({
-        where: { employeeId: id }
-      })
-      
+        where: { employeeId: id },
+      });
+
       await prisma.relationship.createMany({
         data: relationships.map((rel) => ({
           employeeId: employee.id,
-          ...rel
-        }))
-      })
+          ...rel,
+        })),
+      });
     }
 
-    revalidatePath('/employees')
-    revalidatePath('/employees', 'page')
-    return { success: true, employee }
+    revalidatePath("/employees");
+    revalidatePath("/employees", "page");
+    return { success: true, employee };
   } catch (error) {
-    console.error("Error updating employee:", error)
+    console.error("Error updating employee:", error);
     if (error instanceof z.ZodError) {
-      return { success: false, error: "بيانات غير صحيحة" }
+      return { success: false, error: "بيانات غير صحيحة" };
     }
-    return { success: false, error: "حدث خطأ أثناء تحديث الموظف" }
+    return { success: false, error: "حدث خطأ أثناء تحديث الموظف" };
   }
-}
+};
 
 export const getEmployees = async () => {
   try {
     const employees = await prisma.employee.findMany({
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       include: {
         relationships: true,
-      }
-    })
+      },
+    });
 
-
-    return { success: true, employees }
+    return { success: true, employees };
   } catch (error) {
-    console.error("Error fetching employees:", error)
-    return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
+    console.error("Error fetching employees:", error);
+    return { success: false, error: "حدث خطأ أثناء جلب البيانات" };
   }
-}
+};
 export const deleteEmployee = async (id: string) => {
   try {
     await prisma.employee.delete({
-      where: { id }
-    })
-    
+      where: { id },
+    });
+
     // Revalidate multiple paths to ensure cache is cleared
-    revalidatePath('/employees')
-    revalidatePath('/employees', 'page')
-    revalidatePath('/', 'layout')
-    return { success: true }
+    revalidatePath("/employees");
+    revalidatePath("/employees", "page");
+    revalidatePath("/", "layout");
+    return { success: true };
   } catch (error) {
-    console.error("Error deleting employee:", error)
-    return { success: false, error: "حدث خطأ أثناء حذف الموظف" }
+    console.error("Error deleting employee:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف الموظف" };
   }
-}
-
-
+};
 
 export const getEmployeeById = async (id: string) => {
   try {
@@ -192,18 +204,16 @@ export const getEmployeeById = async (id: string) => {
       where: { id },
       include: {
         relationships: true,
-      }
-    })
+      },
+    });
 
     if (!employee) {
-      return { success: false, error: "الموظف غير موجود" }
+      return { success: false, error: "الموظف غير موجود" };
     }
 
-    return { success: true, employee }
+    return { success: true, employee };
   } catch (error) {
-    console.error("Error fetching employee:", error)
-    return { success: false, error: "حدث خطأ أثناء جلب البيانات" }
+    console.error("Error fetching employee:", error);
+    return { success: false, error: "حدث خطأ أثناء جلب البيانات" };
   }
-
-}
-
+};

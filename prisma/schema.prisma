@@ -79,6 +79,9 @@ model Employee {
   administration    String // الادارة
   actualWork        String // العمل الفعلي
   phoneNumber       String // رقم الهاتف
+  personalImageUrl  String?  @map("personal_image_url")
+  idFrontImageUrl   String?  @map("id_front_image_url")
+  idBackImageUrl    String?  @map("id_back_image_url")
   notes             String? // ملاحظات
 
   // Relationships
