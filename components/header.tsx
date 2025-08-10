@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
-import { User, LogOut } from 'lucide-react'
+import React from "react";
+import { useSession, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { User, LogOut } from "lucide-react";
 
 const Header = () => {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/sign-in' })
-  }
+    signOut({ callbackUrl: "/sign-in" });
+  };
 
   return (
     <div className="flex items-center space-x-4">
-      {status === 'loading' ? (
+      {status === "loading" ? (
         <div className="animate-pulse flex items-center space-x-2">
           <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
           <div className="h-4 bg-gray-300 rounded w-20"></div>
@@ -30,19 +30,17 @@ const Header = () => {
               <div className="text-sm font-medium text-gray-900">
                 {session.user.name || session.user.username}
               </div>
-              <div className="text-xs text-gray-500">
-                مرحباً بك
-              </div>
+              <div className="text-xs text-gray-500">مرحباً بك</div>
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
             <Button
               onClick={handleSignOut}
               variant="outline"
               size="sm"
-              className="flex items-center space-x-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+              className="flex cursor-pointer items-center space-x-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">تسجيل خروج</span>
@@ -56,7 +54,7 @@ const Header = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
