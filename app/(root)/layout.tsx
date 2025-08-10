@@ -5,9 +5,6 @@ import Header from "@/components/header";
 import MobileNav from "@/components/mobile-nav";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 
-// import Menu from "@/components/shared/header/menu";
-// import MainNav from "./main-nav";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +19,7 @@ export default function RootLayout({
               {/* Logo and Brand Section */}
               <div className="flex items-center space-x-4">
                 <Link
-                  href="/employees"
+                  href="/"
                   className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
                 >
                   <div className="relative">
