@@ -11,11 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export function SignInForm({
   className,
@@ -40,7 +38,7 @@ export function SignInForm({
       });
 
       if (result?.error) {
-        setError("Invalid username or password");
+        setError("اسم المستخدم أو كلمة المرور غير صحيحة");
       } else {
         router.push("/"); // Redirect to your protected page
         router.refresh();
@@ -88,8 +86,13 @@ export function SignInForm({
                 />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  تسجيل الدخول
+                {error && (
+                  <div className="text-red-500 text-sm text-center">
+                    {error}
+                  </div>
+                )}
+                <Button type="submit" className="w-full cursor-pointer">
+                  {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                 </Button>
               </div>
             </div>
