@@ -10,6 +10,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { formateHiringType, formateMaritalStatus } from "@/lib/utils";
+import EmployeeImages from "@/components/EmployeeImages";
 
 const EmployeeDetailsPage = async (props: {
   params: Promise<{ id: string }>;
@@ -49,6 +50,28 @@ const EmployeeDetailsPage = async (props: {
             العودة إلى قائمة الموظفين
           </Link>
         </div>
+
+        {/* Employee Images Section */}
+        {(employee.personalImageUrl ||
+          employee.idFrontImageUrl ||
+          employee.idBackImageUrl) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900">
+                صور ووثائق الموظف
+              </CardTitle>
+              <CardDescription>الصورة الشخصية ووثائق الهوية</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EmployeeImages
+                personalImageUrl={employee.personalImageUrl}
+                idFrontImageUrl={employee.idFrontImageUrl}
+                idBackImageUrl={employee.idBackImageUrl}
+                employeeName={employee.name}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Employee Basic Information */}
         <Card>
