@@ -58,20 +58,20 @@ interface EmployeeData {
   administration: string;
   actualWork: string;
   phoneNumber: string;
-  notes?: string;
+  notes: string;
   personalImageUrl?: string;
   idFrontImageUrl?: string;
   idBackImageUrl?: string;
   relationships: {
     relationshipType: string;
     name: string;
-    nationalId: string;
-    birthDate: Date;
-    birthPlace?: string;
-    profession?: string;
-    spouseName?: string;
-    residenceLocation: string;
-    notes?: string;
+    nationalId: string | null;
+    birthDate: Date | null;
+    birthPlace?: string | null;
+    profession?: string | null;
+    spouseName?: string | null;
+    residenceLocation: string | null;
+    notes?: string | null;
   }[];
 }
 
@@ -117,7 +117,7 @@ const EmployeeForm = ({
         signal,
         onProgressChange,
       });
-      console.log("Upload response:", res);
+
       setImageUrl(res.url);
       return { url: res.url };
     };
@@ -183,12 +183,14 @@ const EmployeeForm = ({
         employee?.relationships?.map((rel) => ({
           relationshipType: rel.relationshipType,
           name: rel.name,
-          nationalId: rel.nationalId,
-          birthDate: new Date(rel.birthDate).toISOString().split("T")[0],
+          nationalId: rel.nationalId || "",
+          birthDate: rel.birthDate
+            ? new Date(rel.birthDate).toISOString().split("T")[0]
+            : "",
           birthPlace: rel.birthPlace || "",
           profession: rel.profession || "",
           spouseName: rel.spouseName || "",
-          residenceLocation: rel.residenceLocation,
+          residenceLocation: rel.residenceLocation || "",
           notes: rel.notes || "",
         })) || [],
     },
@@ -217,29 +219,22 @@ const EmployeeForm = ({
         administration: values.administration,
         actualWork: values.actualWork,
         phoneNumber: values.phoneNumber,
-        notes: values.notes || undefined,
+        notes: values.notes || "",
         personalImageUrl: personalPhotoUrl,
         idFrontImageUrl: idFrontUrl,
         idBackImageUrl: idBackUrl,
         relationships: values.relationships.map((rel) => ({
           relationshipType: rel.relationshipType,
           name: rel.name,
-          nationalId: rel.nationalId,
-          birthDate: new Date(rel.birthDate),
+          nationalId: rel.nationalId || "",
+          birthDate: new Date(rel.birthDate as string),
           birthPlace: rel.birthPlace || undefined,
           profession: rel.profession || undefined,
           spouseName: rel.spouseName || undefined,
-          residenceLocation: rel.residenceLocation,
+          residenceLocation: rel.residenceLocation || "",
           notes: rel.notes || undefined,
         })),
       };
-
-      console.log(
-        "Transformed data for submission:",
-        transformedData.personalImageUrl,
-        transformedData.idFrontImageUrl,
-        transformedData.idBackImageUrl
-      );
 
       let result;
       if (type === "Update" && employeeId) {
@@ -257,7 +252,7 @@ const EmployeeForm = ({
         toast(
           type === "Update" ? "تم تحديث الموظف بنجاح" : "تم إنشاء الموظف بنجاح"
         );
-        router.push("/employees");
+        router.push("/");
       } else {
         toast(
           result.error ||
@@ -477,58 +472,62 @@ const EmployeeForm = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="projects">
+                        <SelectItem value="اﻹداره المركزيه للمشروعات">
                           اﻹداره المركزيه للمشروعات
                         </SelectItem>
-                        <SelectItem value="finance">
+                        <SelectItem value="اﻹداره العامة للشئون المالية">
                           اﻹداره العامة للشئون المالية
                         </SelectItem>
-                        <SelectItem value="admin">
+                        <SelectItem value="اﻹداره العامة للشئون اﻹداريه">
                           اﻹداره العامة للشئون اﻹداريه
                         </SelectItem>
-                        <SelectItem value="it">
+                        <SelectItem value="نظم المعلومات والتحول الرقمي">
                           نظم المعلومات والتحول الرقمي
                         </SelectItem>
-                        <SelectItem value="technical-office">
+                        <SelectItem value="المكتب الفني">
                           المكتب الفني
                         </SelectItem>
-                        <SelectItem value="public-relations">
+                        <SelectItem value="العلاقات العامة">
                           العلاقات العامة
                         </SelectItem>
-                        <SelectItem value="security">اﻷمن</SelectItem>
-                        <SelectItem value="contracts">التعاقدات</SelectItem>
-                        <SelectItem value="legal">الشئون القانونية</SelectItem>
-                        <SelectItem value="development">
+                        <SelectItem value="اﻷمن">اﻷمن</SelectItem>
+                        <SelectItem value="التعاقدات">التعاقدات</SelectItem>
+                        <SelectItem value="الشئون القانونية">
+                          الشئون القانونية
+                        </SelectItem>
+                        <SelectItem value="التنميه المتكاملة">
                           التنميه المتكاملة
                         </SelectItem>
-                        <SelectItem value="president-office">
+                        <SelectItem value="مكتب رئيس الجهاز">
                           مكتب رئيس الجهاز
                         </SelectItem>
-                        <SelectItem value="vp-office">
+                        <SelectItem value="مكتب نائب رئيس الجهاز">
                           مكتب نائب رئيس الجهاز
                         </SelectItem>
-                        <SelectItem value="planning">
+                        <SelectItem value="التخطيط والمتابعه">
                           التخطيط والمتابعه
                         </SelectItem>
-                        <SelectItem value="north-sinai">
+                        <SelectItem value="منطقه تعمير شمال سيناء">
                           منطقه تعمير شمال سيناء
                         </SelectItem>
-                        <SelectItem value="south-sinai">
+                        <SelectItem value="منطقة تعمير جنوب سيناء">
                           منطقة تعمير جنوب سيناء
                         </SelectItem>
-                        <SelectItem value="portsaid">
+                        <SelectItem value="منطقة تعمير بورسعيد">
                           منطقة تعمير بورسعيد
                         </SelectItem>
-                        <SelectItem value="ismailia">
+                        <SelectItem value="منطقة تعمير الاسماعيليه">
                           منطقة تعمير الاسماعيليه
                         </SelectItem>
-                        <SelectItem value="kantara">
+                        <SelectItem value="منطقة تعميرالقنطره">
                           منطقة تعميرالقنطره
                         </SelectItem>
-                        <SelectItem value="east-kantara">
+                        <SelectItem value="منطقة تعمير القنطرة شرق">
                           منطقة تعمير القنطرة شرق
                         </SelectItem>
-                        <SelectItem value="suez">منطقة تعمير السويس</SelectItem>
+                        <SelectItem value="منطقة تعمير السويس">
+                          منطقة تعمير السويس
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -706,7 +705,7 @@ const EmployeeForm = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ملاحظات</FormLabel>
+                  <FormLabel>الملاحظات الامنية</FormLabel>
                   <FormControl>
                     <Textarea placeholder="أدخل أي ملاحظات إضافية" {...field} />
                   </FormControl>
@@ -940,7 +939,7 @@ const EmployeeForm = ({
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/employees")}
+            onClick={() => router.push("/")}
           >
             رجوع
           </Button>
@@ -955,7 +954,7 @@ const EmployeeForm = ({
               onClick={async () => {
                 const { success } = await deleteEmployee(employeeId || "");
                 if (success) {
-                  router.push("/employees");
+                  router.push("/");
                 }
               }}
             >

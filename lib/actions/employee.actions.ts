@@ -9,8 +9,8 @@ import { createEmployeeApiSchema } from "../validators";
 interface Relationship {
   relationshipType: string;
   name: string;
-  nationalId: string;
-  birthDate: Date;
+  nationalId: string | null;
+  birthDate: Date | null;
   birthPlace?: string;
   profession?: string;
   spouseName?: string;
@@ -34,34 +34,27 @@ export async function createEmployee(
       residenceLocation: validatedData.residenceLocation,
       hiringDate: new Date(validatedData.hiringDate),
       hiringType: validatedData.hiringType,
-      email: validatedData.email || null,
       administration: validatedData.administration,
       actualWork: validatedData.actualWork,
       phoneNumber: validatedData.phoneNumber,
-      notes: validatedData.notes || null,
+      email: validatedData.email || null,
+      notes: validatedData.notes || "",
       personalImageUrl: validatedData.personalImageUrl || null,
       idFrontImageUrl: validatedData.idFrontImageUrl || null,
       idBackImageUrl: validatedData.idBackImageUrl || null,
     };
-
-    console.log(
-      "Employee data to be created:",
-      empData.personalImageUrl,
-      empData.idFrontImageUrl,
-      empData.idBackImageUrl
-    );
 
     let relationships: Relationship[] = [];
     if (validatedData.relationships && validatedData.relationships.length > 0) {
       relationships = validatedData.relationships.map((rel) => ({
         relationshipType: rel.relationshipType,
         name: rel.name,
-        nationalId: rel.nationalId,
-        birthDate: new Date(rel.birthDate),
+        nationalId: rel.nationalId || null, // Changed from "" to null
+        birthDate: rel.birthDate ? new Date(rel.birthDate) : null,
         birthPlace: rel.birthPlace || undefined,
         profession: rel.profession || undefined,
         spouseName: rel.spouseName || undefined,
-        residenceLocation: rel.residenceLocation,
+        residenceLocation: rel.residenceLocation || "",
         notes: rel.notes || undefined,
       }));
     }
@@ -79,9 +72,9 @@ export async function createEmployee(
       });
     }
 
-    revalidatePath("/employees");
-    revalidatePath("/employees", "page");
-    console.log("revalidatePath reached");
+    revalidatePath("/");
+    revalidatePath("/", "page");
+
     return { success: true, employee };
   } catch (error) {
     console.error("Error creating employee:", error);
@@ -113,7 +106,7 @@ export const updateEmployee = async (
       administration: validatedData.administration,
       actualWork: validatedData.actualWork,
       phoneNumber: validatedData.phoneNumber,
-      notes: validatedData.notes || null,
+      ...(validatedData.notes && { notes: validatedData.notes }),
       personalImageUrl: validatedData.personalImageUrl || null,
       idFrontImageUrl: validatedData.idFrontImageUrl || null,
       idBackImageUrl: validatedData.idBackImageUrl || null,
@@ -124,12 +117,12 @@ export const updateEmployee = async (
       relationships = validatedData.relationships.map((rel) => ({
         relationshipType: rel.relationshipType,
         name: rel.name,
-        nationalId: rel.nationalId,
-        birthDate: new Date(rel.birthDate),
+        nationalId: rel.nationalId || null, // Changed from "" to null
+        birthDate: rel.birthDate ? new Date(rel.birthDate) : null,
         birthPlace: rel.birthPlace || undefined,
         profession: rel.profession || undefined,
         spouseName: rel.spouseName || undefined,
-        residenceLocation: rel.residenceLocation,
+        residenceLocation: rel.residenceLocation || "",
         notes: rel.notes || undefined,
       }));
     }
@@ -152,8 +145,8 @@ export const updateEmployee = async (
       });
     }
 
-    revalidatePath("/employees");
-    revalidatePath("/employees", "page");
+    revalidatePath("/");
+    revalidatePath("/", "page");
     return { success: true, employee };
   } catch (error) {
     console.error("Error updating employee:", error);
@@ -188,8 +181,8 @@ export const deleteEmployee = async (id: string) => {
     });
 
     // Revalidate multiple paths to ensure cache is cleared
-    revalidatePath("/employees");
-    revalidatePath("/employees", "page");
+    revalidatePath("/");
+    revalidatePath("/", "page");
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {

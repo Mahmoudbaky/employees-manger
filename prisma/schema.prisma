@@ -82,7 +82,7 @@ model Employee {
   personalImageUrl  String?  @map("personal_image_url")
   idFrontImageUrl   String?  @map("id_front_image_url")
   idBackImageUrl    String?  @map("id_back_image_url")
-  notes             String? // ملاحظات
+  notes             String // ملاحظات
 
   // Relationships
   relationships Relationship[] // العلاقات
@@ -100,12 +100,12 @@ model Relationship {
 
   relationshipType  String // نوع العلاقة (أب/أم/أخ/أخت)
   name              String // اسم الزوج/الزوجة
-  nationalId        String   @unique // رقم الهوية الوطنية
-  birthDate         DateTime // تاريخ الميلاد
+  nationalId        String?   @unique // رقم الهوية الوطنية
+  birthDate         DateTime? // تاريخ الميلاد
   birthPlace        String? // مكان الميلاد
   profession        String? // المهنة
   spouseName        String? // اسم الزوج/الزوجة
-  residenceLocation String // محل الاقامة للعمل
+  residenceLocation String? // محل الاقامة للعمل
   notes             String? // ملاحظات
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
